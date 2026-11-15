@@ -1,0 +1,17 @@
+{
+  "name": "Daftar — gestion de magasin",
+  "short_name": "Daftar",
+  "description": "Ventes, stock, crédit, fournisseurs, factures et comptabilité pour un magasin de trottinettes.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0b0c0e",
+  "theme_color": "#0b0c0e",
+  "lang": "fr",
+  "icons": [
+    { "src": "img/icon-192.png", "type": "image/png", "sizes": "192x192", "purpose": "any" },
+    { "src": "img/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "any" },
+    { "src": "img/icon-512.png", "type": "image/png", "sizes": "512x512", "purpose": "maskable" }
+  ]
+}
