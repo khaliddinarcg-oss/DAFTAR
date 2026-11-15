@@ -298,7 +298,7 @@ function sell(s,o){const d=o.date||plus(0),lines=[];
       cost:(u?(u.cost||r.cost||0):(r.cost||0))*qty,war:r.war??0,kind:r.kind})}
   if(!lines.length)return null;
   const total=lines.reduce((a,l)=>a+l.total,0),cost=lines.reduce((a,l)=>a+l.cost,0);
-  const t={no:'T-'+String(++s.seq).padStart(4,'0'),date:d,name:o.name||'Client comptoir',phone:o.phone||'',
+  const t={id:uid(),no:'T-'+String(++s.seq).padStart(4,'0'),date:d,name:o.name||'Client comptoir',phone:o.phone||'',
     lines,total,cost,pay:o.pay||'comptant',status:'ok',linked:o.linked||null};
   lines.forEach(l=>{if(l.unit){const u=s.units.find(x=>x.id===l.unit);u.status='vendu';u.soldDate=d;u.ticket=t.no}
     else{const r=refOf(s,l.ref);r.qty-=l.qty}});
@@ -326,7 +326,7 @@ function refund(s,no,o){const t=s.tickets.find(x=>x.no===no);if(!t||t.status!=='
   s.sales=s.sales.filter(v=>v.ticket!==no);s.credits=s.credits.filter(x=>x.ticket!==no);
   if(l)l.status='retour';
   op(s,'remboursement','Remboursement '+no+' · '+tLabel(t)+' · '+t.name,-back,t.ret.d,no);
-  if(t.facture){const a={...s.invoices.find(f=>f.no===t.facture),no:'A-'+t.ret.d.slice(0,4)+'-'+String(++s.aseq).padStart(4,'0'),type:'avoir',date:t.ret.d,of:t.facture,reason:o.reason};s.invoices.push(a);t.avoir=a.no}
+  if(t.facture){const a={...s.invoices.find(f=>f.no===t.facture),id:uid(),no:'A-'+t.ret.d.slice(0,4)+'-'+String(++s.aseq).padStart(4,'0'),type:'avoir',date:t.ret.d,of:t.facture,reason:o.reason};s.invoices.push(a);t.avoir=a.no}
   return t}
 
 /* a payment can never exceed what is still owed */
@@ -339,7 +339,7 @@ function payCredit(s,id,a,due){const c=s.credits.find(x=>x.id===id),max=rest(c);
 /* invoices are numbered in one unbroken series and never deleted: a return produces a credit note (avoir) */
 function invoice(s,no,c,date){const t=s.tickets.find(x=>x.no===no);if(!t)return null;
   if(t.facture)return s.invoices.find(f=>f.no===t.facture);if(t.status!=='ok')return null;
-  const d=date||plus(0),f={no:'F-'+d.slice(0,4)+'-'+String(++s.fseq).padStart(4,'0'),type:'facture',date:d,ticket:no,
+  const d=date||plus(0),f={id:uid(),no:'F-'+d.slice(0,4)+'-'+String(++s.fseq).padStart(4,'0'),type:'facture',date:d,ticket:no,
     kind:(c&&c.kind)==='b2b'?'b2b':'b2c',name:(c&&c.name)||t.name,addr:(c&&c.addr)||'',ice:(c&&c.kind)==='b2b'?(c.ice||''):'',
     lines:t.lines.map(l=>({model:l.model,serial:l.serial,qty:l.qty,price:l.price,total:l.total})),
     total:t.total,tva:s.info.tva||0,pay:t.pay};
@@ -390,6 +390,72 @@ function analyse(s){const t30=soldIn(s,30);
   const ret=s.tickets.filter(t=>t.status!=='ok').length;
   return{rows,reasons,ca:t30.reduce((a,t)=>a+t.total,0),margin:t30.reduce((a,t)=>a+(t.cost?t.total-t.cost:0),0),n:t30.length,
     retRate:s.tickets.length?Math.round(ret/s.tickets.length*100):0,value:stockValue(s)}}
+
+/* ---------- synchronisation: S <-> éléments en ligne (pure, no network) ----------
+   Each item of S becomes one row {c: collection, k: key, d: data}. Costs travel apart
+   (stock$, units$, tickets$) and buys, pays, ops are private: the server never sends them
+   to a seller. Counters are not synced: they are recomputed from the data itself. */
+const SYNC_COLS=['stock','units','sups','tickets','invoices','credits','dels','sales','leads','buys','pays','ops'];
+const SYNC_META=['shop','info','rules','inv','lastInv'];
+const emptyShop=()=>({shop:'Ma boutique',info:{addr:'',tel:'',ice:'',ifi:'',tp:'',rc:'',tva:0,logo:'',url:APP},rules:{...RULES},
+  demo:false,seq:0,sn:0,fseq:0,aseq:0,stock:[],units:[],sups:[],tickets:[],invoices:[],credits:[],dels:[],sales:[],leads:[],
+  buys:[],pays:[],ops:[],inv:null,lastInv:null});
+function toRows(s,withTicketCost){const out=new Map(),put=(c,k,d)=>out.set(c+'|'+k,{c,k,d});
+  const m={};SYNC_META.forEach(k=>m[k]=s[k]??null);put('meta','magasin',m);
+  for(const c of SYNC_COLS)for(const x of (s[c]||[])){if(!x.id)x.id=uid();
+    if(c==='stock'||c==='units'){const {cost,...p}=x;put(c,x.id,p);if(cost!==undefined)put(c+'$',x.id,{cost})}
+    else if(c==='tickets'){const {cost,lines,...p}=x;put(c,x.id,{...p,lines:(lines||[]).map(({cost,...l})=>l)});
+      if(withTicketCost&&cost!==undefined)put('tickets$',x.id,{cost,lines:(lines||[]).map(l=>l.cost??null)})}
+    else put(c,x.id,x)}
+  return out}
+/* in place, so that an open form keeps a live reference to the object it edits */
+const replaceIn=(o,n)=>{Object.keys(o).forEach(k=>delete o[k]);return Object.assign(o,n)};
+function applyRow(s,r){
+  if(r.c==='meta'){if(!r.del)SYNC_META.forEach(k=>{if(k in r.d)s[k]=r.d[k]});return}
+  const base=r.c.replace('$',''),list=s[base];if(!list)return;
+  const i=list.findIndex(x=>x.id===r.k),old=i<0?null:list[i];
+  if(r.c.endsWith('$')){if(!old||r.del)return;
+    old.cost=r.d.cost;if(base==='tickets'&&Array.isArray(r.d.lines))(old.lines||[]).forEach((l,j)=>{if(r.d.lines[j]!=null)l.cost=r.d.lines[j]});return}
+  if(r.del){if(i>=0)list.splice(i,1);return}
+  const n={...r.d,id:r.k};
+  if(old&&old.cost!==undefined&&n.cost===undefined)n.cost=old.cost;
+  if(base==='tickets'&&old&&Array.isArray(n.lines))n.lines.forEach((l,j)=>{const c=old.lines&&old.lines[j]&&old.lines[j].cost;if(c!==undefined&&l.cost===undefined)l.cost=c});
+  if(old)replaceIn(old,n);else list.push(n)}
+/* counters only ever go up, and never below what the data already uses */
+const lastNum=(l,re)=>l.reduce((a,x)=>{const m=re.exec(x||'');return m?Math.max(a,+m[1]):a},0);
+function fixCounters(s){
+  s.seq=Math.max(s.seq||0,lastNum(s.tickets.map(t=>t.no),/^T-(\d+)$/));
+  s.fseq=Math.max(s.fseq||0,lastNum(s.invoices.filter(f=>f.type!=='avoir').map(f=>f.no),/^F-\d{4}-(\d+)$/));
+  s.aseq=Math.max(s.aseq||0,lastNum(s.invoices.filter(f=>f.type==='avoir').map(f=>f.no),/^A-\d{4}-(\d+)$/));
+  s.sn=Math.max(s.sn||0,lastNum(s.units.map(u=>u.serial),/^[A-Z0-9]{0,4}-(\d{5})$/))}
+/* a seller's ticket arrives without its cost: the boss's phone computes it from what it knows */
+function fillCosts(s){let n=0;
+  s.tickets.forEach(t=>{if(t.cost!==undefined)return;
+    (t.lines||[]).forEach(l=>{const u=l.unit&&s.units.find(x=>x.id===l.unit),r=refOf(s,l.ref);
+      l.cost=((u&&u.cost)||(r&&r.cost)||0)*l.qty});
+    t.cost=(t.lines||[]).reduce((a,l)=>a+l.cost,0);n++});return n}
+/* two phones offline may give the same number: the later one takes the next free number.
+   While both exist, the number is ambiguous, so the ticket is found by its id and the records
+   around it only if mine(collection, item) says they were made on this phone and not yet sent. */
+function renameTicket(s,id,nw,mine=()=>true){const t=s.tickets.find(x=>x.id===id);if(!t)return;const old=t.no;t.no=nw;
+  const units=new Set((t.lines||[]).map(l=>l.unit).filter(Boolean));
+  s.units.forEach(u=>{if(units.has(u.id)&&u.ticket===old)u.ticket=nw});
+  s.tickets.forEach(x=>{if(x.linked===old&&mine('tickets',x))x.linked=nw});
+  ['sales','credits','dels','invoices'].forEach(c=>s[c].forEach(x=>{if(x.ticket===old&&mine(c,x))x.ticket=nw}));
+  s.ops.forEach(o=>{if(o.ticket===old&&mine('ops',o)){o.ticket=nw;o.label=o.label.split(old).join(nw)}})}
+function renameInvoice(s,id,nw,mine=()=>true){const f=s.invoices.find(x=>x.id===id);if(!f)return;const old=f.no;f.no=nw;
+  s.invoices.forEach(x=>{if(x.of===old&&mine('invoices',x))x.of=nw});
+  s.tickets.forEach(t=>{if(mine('tickets',t)){if(t.facture===old)t.facture=nw;if(t.avoir===old)t.avoir=nw}})}
+function nextNumber(s,item,col){fixCounters(s);
+  if(col==='tickets')return 'T-'+String(++s.seq).padStart(4,'0');
+  const y=(item.date||plus(0)).slice(0,4);
+  return item.type==='avoir'?'A-'+y+'-'+String(++s.aseq).padStart(4,'0'):'F-'+y+'-'+String(++s.fseq).padStart(4,'0')}
+/* short, stable fingerprint of a row, to know what changed since the last exchange */
+function hashOf(v){const t=JSON.stringify(v);let h1=0xdeadbeef,h2=0x41c6ce57;
+  for(let i=0;i<t.length;i++){const c=t.charCodeAt(i);h1=Math.imul(h1^c,2654435761);h2=Math.imul(h2^c,1597334677)}
+  h1=Math.imul(h1^(h1>>>16),2246822507)^Math.imul(h2^(h2>>>13),3266489909);
+  h2=Math.imul(h2^(h2>>>16),2246822507)^Math.imul(h1^(h1>>>13),3266489909);
+  return (h2>>>0).toString(36)+(h1>>>0).toString(36)}
 
 /* a small, readable sample shop: 5 articles, 2 suppliers, 6 sales */
 function seed(){const s={shop:'Tanja Trott',demo:true,seq:0,sn:0,fseq:0,aseq:0,credits:[],dels:[],sales:[],units:[],tickets:[],ops:[],invoices:[],buys:[],pays:[],inv:null,lastInv:null,
@@ -486,7 +552,7 @@ if(!S.pays)S.pays=[];
 if(S.info.url===undefined)S.info.url=APP;
 if(!S.role)S.role='patron';if(S.pin===undefined)S.pin='';
 const isP=()=>S.role==='patron';
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}if(online())syncLater()};
 const $=q=>document.querySelector(q);
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const LEAD={nouveau:'Nouveau',discussion:'En discussion',reserve:'Réservé',vendu:'Vendu',perdu:'Perdu'};
@@ -620,7 +686,7 @@ const views={
     <a href="#fournisseurs" class="${supDue(S)?'low':''}"><b>${dh(supDue(S))}</b><span>à payer aux fournisseurs</span></a></div></section>
   <a class="btn primary wide big" href="#vente">Nouvelle vente</a>
   <h2>À faire aujourd'hui</h2>${todo||empty('Rien en retard. Tout est à jour.')}`},
- reglages(){return `${isP()?`<h2>Votre magasin</h2>
+ reglages(){return `${compteCard()}${isP()?`<h2>Votre magasin</h2>
   <div class="card"><div class="row"><div><div class="name">Nom et logo</div><div class="meta">Le nom et le logo s'affichent en haut de l'application, sur les tickets et sur les factures.</div></div>${S.info.logo?`<img class="logo-prev" src="${esc(S.info.logo)}" alt="Logo actuel">`:''}</div>
    <label class="meta" for="shop">Nom du magasin</label><input id="shop" data-change="shop" value="${esc(S.shop)}">
    <div class="acts"><button class="btn" data-act="logo">${S.info.logo?'Changer le logo':'Ajouter le logo'}</button>${S.info.logo?'<button class="btn link" data-act="logo-rm">Retirer</button>':''}<button class="btn" data-act="info">Informations de facturation</button></div></div>
@@ -631,10 +697,10 @@ const views={
   <div class="card"><div class="row"><div><div class="name">Limites appliquées au vendeur</div><div class="meta">Remise maximale ${S.rules.disc} % · retour accepté jusqu'à ${S.rules.retDays} jours après la vente.</div></div></div>
    <div class="acts"><button class="btn" data-act="rules">Modifier les règles</button></div></div>
   <h2>Données</h2>
-  <div class="acts"><button class="btn" data-act="reseed">Remettre les exemples</button><button class="btn" data-act="clear">Tout vider et commencer</button></div>`:
+  ${online()?`<p class="meta">Magasin en ligne : les exemples et la remise à zéro sont désactivés, pour ne rien effacer chez le reste de l'équipe.</p>`:`<div class="acts"><button class="btn" data-act="reseed">Remettre les exemples</button><button class="btn" data-act="clear">Tout vider et commencer</button></div>`}`:
   `<h2>Accès</h2><div class="card warn"><div class="row"><div><div class="name">Mode vendeur</div><div class="meta">Prix d'achat, marges et comptabilité réservés au patron.</div></div><span class="pill warn">Vendeur</span></div>
-   <div class="acts"><button class="btn" data-act="to-boss">Revenir en mode patron</button></div></div>`}
-  <p class="foot">Les données restent sur ce téléphone uniquement.</p>`},
+   ${online()&&link.role==='vendeur'?'':'<div class="acts"><button class="btn" data-act="to-boss">Revenir en mode patron</button></div>'}</div>`}
+  <p class="foot">${online()?'Les données sont gardées en ligne et partagées avec l’équipe du magasin.':'Les données restent sur ce téléphone uniquement.'}</p>`},
  vente(){const refs=S.stock.filter(r=>qtyOf(S,r)>0);
   if(!S.stock.length)return `<div class="card bad"><div class="name">Le magasin est vide</div><div class="meta">Aucun article n'existe, donc aucune étiquette ne peut être reconnue et rien ne peut être vendu.</div>
    <div class="acts"><button class="btn primary" data-act="reseed">Charger les exemples</button><button class="btn" data-act="add-stock">Créer un article</button></div></div>`;
@@ -730,6 +796,7 @@ function render(keepFocus){const t=tab(),G=groups(),g=G.find(x=>x[1].includes(t)
   document.title=S.shop;
   $('#today').textContent=(isP()?'':'Mode vendeur · ')+today().toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});
   if(keepFocus){const s=$('#search');if(s){s.focus();s.setSelectionRange(q.length,q.length)}}
+  if(t==='reglages'&&auth&&!online())listShops();
 }
 const upd=()=>{save();render()};
 
@@ -754,14 +821,14 @@ async function savePdf(){if(!window.jspdf)return say("L'outil PDF n'a pas pu se 
   saveFile((paper&&paper.name||'document')+'.pdf',doc.output('blob'),"Document pr\u00eat. Ouvrez-le depuis le t\u00e9l\u00e9phone, puis choisissez Imprimer ou Partager.")}
 function sheet(title,fields,cb,check){onSave=cb;onCheck=check||null;
   $('#form').innerHTML=`<h2>${title}</h2>`+fields.map(f=>`<label for="f-${f.k}">${f.l}${f.o?`<select id="f-${f.k}" name="${f.k}">${opts(f.o,f.v)}</select>`:`<input id="f-${f.k}" name="${f.k}" type="${f.t||'text'}" value="${esc(f.v??'')}" ${f.t==='number'?'inputmode="numeric" min="0" step="1"':''} ${f.opt?'':'required'}>`}</label>`).join('')+
-  `<p class="err" id="err" role="alert" hidden></p><div class="acts"><button class="btn primary" type="submit">Enregistrer</button><button class="btn" type="button" data-act="close">Annuler</button></div>`;
+  `<p class="err" id="err" role="alert" hidden></p><div class="acts"><button class="btn primary" type="submit">${esc((cb&&cb.label)||'Enregistrer')}</button><button class="btn" type="button" data-act="close">Annuler</button></div>`;
   $('#sheet').hidden=false;const i=$('#form input,#form select');if(i)i.focus();}
 function panel(html){onSave=null;onCheck=null;$('#form').innerHTML=html;$('#sheet').hidden=false;$('#form').scrollTop=0}
 const say=t=>panel(`<p>${t}</p><div class="acts">${closeBtn}</div>`);
 const closeSheet=()=>{if(typeof camStop==='function')camStop();$('#sheet').hidden=true;onSave=null;onCheck=null};
 $('#form').addEventListener('submit',e=>{e.preventDefault();const d=Object.fromEntries(new FormData(e.target));const cb=onSave;if(!cb)return;
   if(onCheck){const m=onCheck(d);if(m){const er=$('#err');er.textContent=m;er.hidden=false;er.scrollIntoView({block:'nearest'});return}}
-  closeSheet();cb(d);S.demo=false;upd()});
+  closeSheet();cb(d);if(!cb.keepDemo)S.demo=false;upd()});
 $('#sheet').addEventListener('click',e=>{if(e.target.id==='sheet')closeSheet()});
 const n=v=>Math.max(0,Number(v)||0);
 const person=[{k:'name',l:'Nom du client'},{k:'phone',l:'Téléphone (WhatsApp)',t:'tel'},{k:'model',l:'Modèle de trottinette'}];
@@ -945,7 +1012,7 @@ const acts={
  logo(){picFor='';$('#logo').click()},
  pic(id){picFor=id;$('#logo').click()},
  'to-seller'(){S.role='vendeur';location.hash='#reglages';upd()},
- 'to-boss'(){if(!S.pin){S.role='patron';upd();return}
+ 'to-boss'(){if(online()&&link.role==='vendeur')return say('Ce compte est vendeur dans ce magasin. Seul un compte patron ouvre le mode patron.');if(!S.pin){S.role='patron';upd();return}
   sheet('Code du patron',[{k:'c',l:'Entrez le code à 4 chiffres'}],()=>{S.role='patron';upd()},d=>d.c.trim()===S.pin?'':'Code incorrect.')},
  'set-pin'(){sheet('Code du patron',[{k:'c',l:'Code à 4 chiffres, vide pour enlever la protection',v:S.pin,opt:1}],d=>{S.pin=d.c.trim()},
   d=>d.c.trim()&&!/^\d{4}$/.test(d.c.trim())?'Le code doit avoir 4 chiffres.':'')},
@@ -1068,8 +1135,8 @@ const acts={
    d=>{v.repairs.push({d:d.d,what:d.what,price:n(d.price)});op(S,'reparation','Réparation · '+d.what+' · '+v.name,n(d.price),d.d,v.ticket)},
    d=>!d.what.trim()?'Dites ce qui a été réparé.':days(d.d)>0?'La date ne peut pas être dans le futur.':'')},
  touch(id){const l=find('leads',id);l.last=plus(0);if(l.status==='nouveau')l.status='discussion';setTimeout(upd,300)},
- reseed(_,b){closeSheet();if(sure(b)){const r=S.role,pin=S.pin,lg=S.info.logo;S=seed();S.role=r;S.pin=pin;if(lg)S.info.logo=lg;upd()}},
- clear(_,b){if(sure(b)){S={shop:S.shop,info:S.info,rules:S.rules,role:'patron',pin:S.pin,pays:[],demo:false,seq:0,sn:0,fseq:0,aseq:0,ops:[],invoices:[],buys:[],sups:S.sups,credits:[],leads:[],dels:[],sales:[],stock:[],units:[],tickets:[],inv:null,lastInv:null};upd()}},
+ reseed(_,b){closeSheet();if(online())return say('Désactivé pour un magasin en ligne.');if(sure(b)){const r=S.role,pin=S.pin,lg=S.info.logo;S=seed();S.role=r;S.pin=pin;if(lg)S.info.logo=lg;upd()}},
+ clear(_,b){if(online())return say('Désactivé pour un magasin en ligne.');if(sure(b)){S={shop:S.shop,info:S.info,rules:S.rules,role:'patron',pin:S.pin,pays:[],demo:false,seq:0,sn:0,fseq:0,aseq:0,ops:[],invoices:[],buys:[],sups:S.sups,credits:[],leads:[],dels:[],sales:[],stock:[],units:[],tickets:[],inv:null,lastInv:null};upd()}},
  rm(id,b){const c=b.dataset.col;
   if(c==='stock'){const r=refOf(S,id),q=qtyOf(S,r);
    if(q>0)return say('Impossible : il reste '+q+' en stock. Vendez-les ou corrigez la quantité avant de supprimer.');
@@ -1179,6 +1246,181 @@ $('#logo').addEventListener('change',e=>{const f=e.target.files[0];e.target.valu
     if(picFor){const r=refOf(S,picFor);if(r)r.img=d;picFor=''}else S.info.logo=d;
     S.demo=false;upd()}catch(err){say("Cette image n'a pas pu être lue. Essayez un fichier PNG ou JPG.")}URL.revokeObjectURL(url)};
   img.onerror=()=>{URL.revokeObjectURL(url);say("Cette image n'a pas pu être lue. Essayez un fichier PNG ou JPG.")};img.src=url});
+
+/* ---------- compte et synchronisation en ligne (Supabase) ----------
+   Sans compte, l'application marche comme avant : tout reste dans le téléphone.
+   Avec un compte relié à un magasin, chaque modification part au serveur et les
+   modifications des autres téléphones arrivent toutes les 20 secondes. */
+const SB={url:'https://gfxpvuhfuarllqopbwlw.supabase.co',key:'sb_publishable_fyCsSpiEfEfnB5oHcktNlA_BG5360-x'};
+const AK='daftar-compte',SK='daftar-sync';
+let auth=null,link=null,syncInfo={busy:false,err:'',at:0,refused:[]},syncTimer=null;
+try{auth=JSON.parse(localStorage.getItem(AK))}catch(e){}
+try{link=JSON.parse(localStorage.getItem(SK))}catch(e){}
+function online(){try{return !!(auth&&link&&link.m)}catch(e){return false}}
+const keepAuth=()=>{try{auth?localStorage.setItem(AK,JSON.stringify(auth)):localStorage.removeItem(AK)}catch(e){}};
+const keepLink=()=>{try{link?localStorage.setItem(SK,JSON.stringify(link)):localStorage.removeItem(SK)}catch(e){}};
+const canCost=()=>!!link&&link.role!=='vendeur';
+/* the server role decides; a boss may still hand his phone over in seller mode */
+function applyRole(){if(!online())return;if(link.role==='vendeur')S.role='vendeur';else if(S.role!=='vendeur')S.role='patron'}
+
+function authErr(j,status){const m=String((j&&(j.msg||j.error_description||j.message||j.error_code||j.error))||'');
+  if(/invalid.*credentials|invalid login/i.test(m))return 'Adresse ou mot de passe incorrect.';
+  if(/not.*confirmed/i.test(m))return "Adresse pas encore confirmée : ouvrez le lien reçu par e-mail, puis connectez-vous.";
+  if(/already.*(registered|exists)/i.test(m))return 'Un compte existe déjà avec cette adresse : connectez-vous.';
+  if(/password/i.test(m))return 'Mot de passe trop faible : 8 caractères au moins.';
+  if(/rate|too many|security purposes/i.test(m))return 'Trop de tentatives. Réessayez dans quelques minutes.';
+  if(/email/i.test(m))return 'Adresse e-mail invalide.';
+  return m||('Le serveur a répondu '+status+'.')}
+async function authCall(path,body){let r;
+  try{r=await fetch(SB.url+'/auth/v1/'+path,{method:'POST',headers:{apikey:SB.key,'Content-Type':'application/json'},body:JSON.stringify(body)})}
+  catch(e){const x=new Error('Pas de connexion au serveur. Vérifiez internet.');x.net=true;throw x}
+  const j=await r.json().catch(()=>({}));if(!r.ok){const x=new Error(authErr(j,r.status));x.status=r.status;throw x}return j}
+const setSession=j=>{auth={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:Date.now()+(j.expires_in||3600)*1000,user:{id:j.user.id,email:j.user.email}};keepAuth()};
+async function token(){if(!auth)throw new Error('Connectez-vous d’abord.');
+  if(Date.now()>auth.expires_at-60000){
+    try{setSession(await authCall('token?grant_type=refresh_token',{refresh_token:auth.refresh_token}))}
+    catch(e){if(!e.net){auth=null;keepAuth();render()}throw e}}
+  return auth.access_token}
+async function api(path,o={}){const t=await token();let r;
+  try{r=await fetch(SB.url+'/rest/v1/'+path,{method:o.method||'GET',cache:'no-store',
+    headers:{apikey:SB.key,Authorization:'Bearer '+t,'Content-Type':'application/json',...(o.prefer?{Prefer:o.prefer}:{})},
+    body:o.body!==undefined?JSON.stringify(o.body):undefined})}
+  catch(e){const x=new Error('Pas de connexion au serveur.');x.net=true;throw x}
+  const txt=await r.text(),j=txt?(()=>{try{return JSON.parse(txt)}catch(e){return null}})():null;
+  if(!r.ok){const x=new Error((j&&j.message)||('Erreur '+r.status));x.status=r.status;x.code=j&&j.code;throw x}return j}
+const rpc=(f,a)=>api('rpc/'+f,{method:'POST',body:a||{}});
+
+/* one exchange: send what changed here, then fetch what changed elsewhere */
+function syncLater(ms){clearTimeout(syncTimer);syncTimer=setTimeout(()=>syncNow().catch(()=>{}),ms??1500)}
+function pending(){if(!online())return [];const rows=toRows(S,canCost()),h=link.h,out=[];
+  rows.forEach((r,key)=>{const x=hashOf(r.d);if(h[key]!==x)out.push({...r,key,x,isNew:!(key in h)})});
+  Object.keys(h).forEach(key=>{if(!rows.has(key)){const [c,k]=key.split('|');out.push({c,k,d:{},key,del:true,x:null})}});
+  return out}
+const rowBody=r=>({magasin_id:link.m,collection:r.c,cle:r.k,donnees:r.d,supprime:!!r.del});
+const PRIV_COLS=new Set(['buys','pays','ops','stock$','units$','tickets$']);
+/* a seller may add private rows (a sale's journal entry) but never read them back, so he
+   sends a plain insert: an upsert would need to read the row. A duplicate means already there. */
+async function sendRows(rows,plain){
+  return api(plain?'elements':'elements?on_conflict=magasin_id,collection,cle',{method:'POST',body:rows.map(rowBody),
+    prefer:plain?'return=minimal':'return=minimal,resolution=merge-duplicates'})}
+async function pushAll(){const p=pending();if(!p.length)return 0;
+  const sellerPriv=r=>!canCost()&&PRIV_COLS.has(r.c);
+  const groups=[p.filter(r=>!sellerPriv(r)),p.filter(sellerPriv)];
+  for(const [gi,g] of groups.entries()){
+    for(let i=0;i<g.length;){const batch=[];let size=0;
+      while(i<g.length&&batch.length<100&&size<900000){const r=g[i++];batch.push(r);size+=JSON.stringify(r.d).length}
+      try{await sendRows(batch,gi===1);batch.forEach(r=>done(r))}
+      catch(e){if(e.net||e.status===401||e.status>=500)throw e;
+        for(const r of batch){try{await sendRows([r],gi===1);done(r)}catch(e2){if(e2.net||e2.status>=500)throw e2;
+          if(gi===1&&e2.code==='23505'){done(r);continue}await refusedRow(r,e2)}}}}}
+  return p.length}
+function done(r){if(r.del)delete link.h[r.key];else link.h[r.key]=r.x}
+/* the server said no: a duplicate number is renumbered, anything else goes back to the server's version */
+async function refusedRow(r,e){
+  if(e.code==='23505'&&(r.c==='tickets'||r.c==='invoices')){const it=S[r.c].find(x=>x.id===r.k);
+    if(it){await pullAll();const old=it.no,nw=nextNumber(S,it,r.c),rows=toRows(S,canCost());
+      const mine=(c,x)=>{const key=c+'|'+x.id,row=rows.get(key);return !(key in link.h)||!row||link.h[key]!==hashOf(row.d)};
+      (r.c==='tickets'?renameTicket:renameInvoice)(S,r.k,nw,mine);
+      syncInfo.refused.push(old+' existait déjà sur un autre téléphone : renuméroté '+nw+'.');return}}
+  syncInfo.refused.push(e.message);
+  const got=await api('elements?select=collection,cle,donnees,supprime,version&magasin_id=eq.'+link.m+'&collection=eq.'+encodeURIComponent(r.c)+'&cle=eq.'+encodeURIComponent(r.k)).catch(()=>[]);
+  if(got&&got[0]){applyRow(S,{c:r.c,k:r.k,d:got[0].donnees,del:got[0].supprime})}
+  else if(!r.del){const list=S[r.c.replace('$','')];if(list&&!r.c.endsWith('$')){const i=list.findIndex(x=>x.id===r.k);if(i>=0)list.splice(i,1)}}
+  const now=toRows(S,canCost()).get(r.key);if(now)link.h[r.key]=hashOf(now.d);else delete link.h[r.key]}
+async function pullAll(){let got=[],page;
+  do{page=await api('elements?select=collection,cle,donnees,supprime,version&magasin_id=eq.'+link.m+'&version=gt.'+(link.v||0)+'&order=version.asc&limit=500');
+    got=got.concat(page);if(page.length)link.v=page[page.length-1].version}while(page.length===500);
+  if(!got.length)return 0;
+  const before=toRows(S,canCost()),dirty=key=>{const r=before.get(key);return r&&key in link.h&&link.h[key]!==hashOf(r.d)};
+  const rows=got.map(g=>({c:g.collection,k:g.cle,d:g.donnees,del:g.supprime,key:g.collection+'|'+g.cle}));
+  /* public rows first, then the cost parts that complete them */
+  rows.sort((a,b)=>a.c.endsWith('$')-b.c.endsWith('$'));
+  for(const r of rows){if(dirty(r.key))continue;applyRow(S,r)}
+  fixCounters(S);if(canCost())fillCosts(S);
+  const after=toRows(S,canCost());
+  for(const r of rows){if(dirty(r.key))continue;const a=after.get(r.key);if(r.del||!a)delete link.h[r.key];else link.h[r.key]=hashOf(a.d)}
+  return got.length}
+/* a request made while an exchange runs is not lost: one more exchange follows */
+function syncNow(){if(!online())return Promise.resolve();
+  if(syncInfo.run){syncInfo.again=true;return syncInfo.run}
+  syncInfo.run=(async()=>{do{syncInfo.again=false;await syncOnce()}while(syncInfo.again&&online())})().finally(()=>{syncInfo.run=null});
+  return syncInfo.run}
+async function syncOnce(){syncInfo.busy=true;let changed=0;const nRef=syncInfo.refused.length,wasErr=syncInfo.err;
+  try{for(let round=0;round<3;round++){const sent=await pushAll(),got=await pullAll();changed+=got;if(!pending().length)break}
+    syncInfo.err='';syncInfo.at=Date.now()}
+  catch(e){syncInfo.err=e.net?'Hors ligne : les modifications partiront au retour du réseau.':e.message}
+  finally{syncInfo.busy=false;keepLink();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+  if(changed||syncInfo.refused.length!==nRef||wasErr!==syncInfo.err)render();else{const el=$('#sync-st');if(el)el.textContent=syncText()}}
+setInterval(()=>{if(online()&&document.visibilityState==='visible')syncNow().catch(()=>{})},20000);
+addEventListener('online',()=>syncLater(200));
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')syncLater(200)});
+
+/* linking this phone to a shop */
+async function openShop(m){link={m:m.id,nom:m.nom,role:m.role,v:0,h:{}};keepLink();
+  const keep={pin:S.pin};S=emptyShop();S.pin=keep.pin;S.shop=m.nom;applyRole();
+  syncInfo.refused=[];await syncNow();applyRole();save();render()}
+async function putOnline(){const nom=S.shop||'Ma boutique';
+  const r=await api('magasins',{method:'POST',body:{nom},prefer:'return=representation'});
+  link={m:r[0].id,nom,role:'patron',v:0,h:{}};keepLink();S.demo=false;S.role='patron';await syncNow()}
+function syncText(){const n=pending().length;
+  return syncInfo.busy?'Synchronisation…':syncInfo.err?syncInfo.err:n?n+' modification'+(n>1?'s':'')+' en attente':syncInfo.at?'À jour · '+new Date(syncInfo.at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'Pas encore synchronisé'}
+function compteCard(){
+  if(!auth)return `<h2>Compte en ligne</h2><div class="card"><div class="name">Garder le magasin en ligne</div>
+   <div class="meta">Aujourd'hui, les données restent dans ce téléphone. Avec un compte, elles sont gardées sur le serveur : un téléphone perdu ne fait rien perdre, et le patron et le vendeur voient le même stock.</div>
+   <div class="acts"><button class="btn primary" data-act="signup">Créer un compte</button><button class="btn" data-act="login">Se connecter</button></div></div>`;
+  if(!online())return `<h2>Compte en ligne</h2><div class="card"><div class="row"><div><div class="name">${esc(auth.user.email)}</div><div class="meta">Connecté, mais ce téléphone n'est relié à aucun magasin.</div></div></div>
+   <div id="shops" class="meta">Recherche de vos magasins…</div>
+   <div class="acts">${isP()?'<button class="btn primary" data-act="go-online">Mettre ce magasin en ligne</button>':''}<button class="btn link" data-act="logout">Se déconnecter</button></div></div>`;
+  const ROLE={patron:'Patron',vendeur:'Vendeur',comptable:'Comptable'},st=syncText();
+  return `<h2>Compte en ligne</h2><div class="card ${syncInfo.err?'warn':'ok'}"><div class="row"><div><div class="name">${esc(link.nom)}</div>
+   <div class="meta">${esc(auth.user.email)} · ${ROLE[link.role]||link.role}</div><div class="meta" id="sync-st">${esc(st)}</div></div><span class="pill ${syncInfo.err?'warn':'ok'}">En ligne</span></div>
+   ${syncInfo.refused.length?`<div class="meta">${syncInfo.refused.slice(-3).map(esc).join('<br>')}</div>`:''}
+   <div class="acts"><button class="btn" data-act="sync-now">Synchroniser maintenant</button><button class="btn" data-act="team">Équipe</button><button class="btn link" data-act="logout">Se déconnecter</button></div></div>`}
+async function listShops(){const box=$('#shops');if(!box)return;
+  try{const l=await rpc('mes_magasins');const b=$('#shops');if(!b)return;
+    b.innerHTML=l.length?'Vos magasins :'+l.map(m=>`<div class="acts"><button class="btn" data-act="open-shop" data-id="${esc(JSON.stringify(m))}">Ouvrir ${esc(m.nom)} · ${esc(m.role)}</button></div>`).join(''):
+      (isP()?'Aucun magasin en ligne pour ce compte. Mettez celui-ci en ligne, ou demandez au patron de vous ajouter à son équipe.':"Aucun magasin pour ce compte. Donnez votre adresse e-mail au patron : il vous ajoute à son équipe, puis revenez ici.")}
+  catch(e){const b=$('#shops');if(b)b.textContent=e.message}}
+/* account forms change nothing in the shop: they must not end the demo */
+const keepDemo=(f,label)=>(f.keepDemo=true,f.label=label,f);
+const authForm=(title,signup)=>sheet(title,[{k:'email',l:'Adresse e-mail',t:'email'},{k:'pw',l:'Mot de passe'+(signup?' (8 caractères au moins)':''),t:'password'}],
+  keepDemo(async d=>{try{const email=d.email.trim().toLowerCase();
+    if(signup){const j=await authCall('signup',{email,password:d.pw});
+      if(!j.access_token)return say('Compte créé. Ouvrez le lien envoyé à <b>'+esc(email)+'</b>, puis revenez ici et connectez-vous.');setSession(j)}
+    else setSession(await authCall('token?grant_type=password',{email,password:d.pw}));
+    location.hash='#reglages';render()}catch(e){say(esc(e.message))}},signup?'Créer le compte':'Se connecter'),
+  d=>!/^\S+@\S+\.\S+$/.test(d.email.trim())?'Adresse e-mail invalide.':d.pw.length<8?'Le mot de passe doit faire 8 caractères au moins.':'');
+Object.assign(acts,{
+ signup(){authForm('Créer un compte',true)},
+ login(){authForm('Se connecter',false)},
+ async logout(_,b){const n=pending().length;
+  if(n&&!b.dataset.sure){b.dataset.sure=1;b.textContent=n+' modification'+(n>1?'s':'')+' pas encore envoyée'+(n>1?'s':'')+' : confirmer ?';return}
+  if(online()&&!sure(b))return;
+  const was=online();auth=null;link=null;keepAuth();keepLink();
+  if(was){const pin=S.pin;S=emptyShop();S.pin=pin;S.role='patron';save()}location.hash='#reglages';render()},
+ async 'go-online'(_,b){if(S.demo&&!b.dataset.sure){b.dataset.sure=1;b.textContent='Ce sont les données d’exemple : confirmer ?';return}
+  b.disabled=true;b.textContent='Mise en ligne…';
+  try{await putOnline();say('Le magasin est en ligne. Ajoutez votre vendeur dans Équipe.')}catch(e){say(esc(e.message));render()}},
+ async 'open-shop'(raw,b){const m=JSON.parse(raw);
+  const local=S.tickets.length||S.stock.length;
+  if(local&&!S.demo&&!b.dataset.sure){b.dataset.sure=1;b.textContent='Les données de ce téléphone seront remplacées : confirmer ?';return}
+  b.disabled=true;b.textContent='Chargement…';
+  try{await openShop(m)}catch(e){link=null;keepLink();say(esc(e.message))}},
+ async 'sync-now'(){syncInfo.refused=[];await syncNow();render()},
+ async team(){try{const l=await rpc('equipe',{m:link.m}),ROLE={patron:'Patron',vendeur:'Vendeur',comptable:'Comptable'};
+  panel(`<h2>Équipe de ${esc(link.nom)}</h2>${l.map(x=>`<div class="card"><div class="row"><div><div class="name">${esc(x.email)}${x.moi?' (vous)':''}</div><div class="meta">${ROLE[x.role]||x.role}</div></div>
+    ${link.role==='patron'&&!x.moi?`<button class="btn link" data-act="team-rm" data-id="${esc(x.user_id)}">Retirer</button>`:''}</div></div>`).join('')}
+   ${link.role==='patron'?`<p class="meta">Pour ajouter quelqu'un : il crée d'abord son compte dans l'application sur son téléphone, puis vous saisissez son adresse ici.</p>
+   <div class="acts"><button class="btn primary" type="button" data-act="team-add">Ajouter une personne</button>${closeBtn}</div>`:`<div class="acts">${closeBtn}</div>`}`)}
+  catch(e){say(esc(e.message))}},
+ 'team-add'(){sheet('Ajouter à l’équipe',[{k:'email',l:'Son adresse e-mail',t:'email'},{k:'role',l:'Rôle',o:{vendeur:'Vendeur : vend, ne voit pas les prix d’achat',comptable:'Comptable : lit tout, ne modifie rien',patron:'Patron : tous les droits'},v:'vendeur'}],
+  keepDemo(async d=>{try{await rpc('ajouter_membre',{m:link.m,courriel:d.email.trim(),r:d.role});acts.team()}catch(e){say(esc(e.message))}},'Ajouter'),
+  d=>/^\S+@\S+\.\S+$/.test(d.email.trim())?'':'Adresse e-mail invalide.')},
+ async 'team-rm'(id,b){if(!sure(b))return;
+  try{await api('membres?magasin_id=eq.'+link.m+'&user_id=eq.'+id,{method:'DELETE'});acts.team()}catch(e){say(esc(e.message))}}
+});
+applyRole();
+if(online())syncLater(300);
 
 document.addEventListener('click',e=>{const v=e.target.closest('[data-view]');
   if(v){view[v.dataset.view]=Number(v.dataset.i);render();return}

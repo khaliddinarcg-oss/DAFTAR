@@ -55,5 +55,16 @@ Le patron règle deux nombres dans Réglages : la remise maximale du vendeur
 (10 % par défaut) et le délai de retour (7 jours). Un code à quatre chiffres
 protège le retour en mode patron.
 
-Attention : c'est un verrou d'affichage sur un seul téléphone, pas une
-sécurité. Les vrais comptes viendront avec le serveur.
+Sans compte, c'est un verrou d'affichage sur un seul téléphone, pas une
+sécurité. Avec un compte en ligne, le rôle vient du serveur : un compte
+vendeur ne peut pas repasser en patron, et son téléphone ne reçoit jamais les
+prix d'achat, les achats ni le journal (voir `docs/base-de-donnees.md`).
+
+| Règle en ligne | Ce qui est refusé |
+| --- | --- |
+| Numéro unique | Deux tickets ou deux factures avec le même numéro dans un magasin |
+| Facture intouchable | Modifier ou supprimer une facture ou un avoir déjà envoyé |
+| Suppression | Un article ou un fournisseur supprimé par un vendeur |
+| Dernier patron | Retirer ou rétrograder le dernier patron d'un magasin |
+| Équipe | Ajouter quelqu'un qui n'a pas encore créé son compte |
+| Magasin en ligne | « Remettre les exemples » et « Tout vider », qui effaceraient chez toute l'équipe |

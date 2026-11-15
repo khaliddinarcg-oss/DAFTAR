@@ -24,6 +24,10 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
 | Numéros de ticket, facture et avoir donnés par le serveur | Deux téléphones du même magasin ne peuvent ni doubler un numéro ni laisser un trou |
 | Trois rôles : patron, vendeur, comptable | Le comptable lit tout, y compris les coûts, et n'écrit rien |
 | L'OCR par IA plutôt que l'OCR gratuit du téléphone | L'OCR gratuit lit du texte brut ; l'IA remplit les champs de la fiche. Moins d'un centime de dirham par fiche ; demande le serveur pour garder la clé |
+| Synchronisation par éléments, pas encore par tables (16 nov. 2026) | L'application modifie ses données à des dizaines d'endroits ; envoyer chaque élément de `S` qui a changé ne touche ni la logique métier ni les écrans. Les 21 tables restent la cible de l'enregistrement côté serveur |
+| Sans compte, l'application marche comme avant | Les démonstrations en boutique se font sans inscription ; le compte s'ajoute quand le commerçant veut garder ses données |
+| Le coût d'une vente du vendeur est calculé chez le patron | Le téléphone du vendeur ne connaît pas les prix d'achat et ne doit pas les connaître |
+| Le vendeur est ajouté par son adresse e-mail, après avoir créé son compte | Pas d'e-mail d'invitation à envoyer : l'offre gratuite de Supabase en envoie très peu |
 
 ## Erreurs commises, pour ne pas les refaire
 
@@ -37,3 +41,16 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
   chaque changement d'adresse.
 - **Un format de QR trop court** n'était pas lu de façon fiable. Les étiquettes
   portent maintenant le nom et la référence en plus de l'identifiant.
+- **Le service worker gardait en cache toutes les réponses venant d'autres
+  sites**, ce qui aurait figé les données du serveur : chaque téléphone aurait
+  relu d'anciennes données. Les adresses `*.supabase.co` passent maintenant
+  toujours par le réseau.
+- **Tout formulaire validé faisait sortir du mode démonstration**, y compris
+  la connexion. Les formulaires du compte ne touchent plus à ce marqueur.
+- **La renumérotation d'un ticket en double cherchait le ticket par son
+  numéro**, donc renommait aussi celui de l'autre téléphone : les deux se
+  couraient après. Elle cherche maintenant par identifiant. Trouvé par
+  `test/sync.js`, qui simule une vente hors ligne.
+- **Un vendeur ne peut pas « écraser » une ligne qu'il n'a pas le droit de
+  lire**, même neuve : la base refuse l'envoi avec remplacement. Il fait un
+  envoi simple, et un doublon compte comme déjà reçu.

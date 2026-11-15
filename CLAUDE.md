@@ -15,6 +15,7 @@ interface. Pas d'étape de compilation, pas de dépendances à installer.
 | `index.html` | L'application entière |
 | `manifest.webmanifest`, `sw.js`, `img/` | Installation sur l'écran d'accueil et fonctionnement hors connexion |
 | `test/smoke.js` | Test de bout en bout dans un vrai navigateur |
+| `test/sync.js` | Test de la synchronisation : trois téléphones simulés contre la vraie base |
 | `supabase/migrations/` | Schéma de la base Supabase, une migration par étape |
 | `README.md` | Mise en ligne, APK, reprise du code |
 
@@ -60,12 +61,16 @@ Charge `index.html` dans Chrome, scanne un article, un fournisseur, un lien et
 un code inconnu, puis parcourt les quinze écrans. Nécessite `playwright` et un
 Chrome local ; sans eux, le script le dit et sort sans échouer.
 
+Si la synchronisation a changé, lancer aussi `test/sync.js` avec les comptes de
+test (voir `docs/base-de-donnees.md`), puis supprimer le magasin qu'il crée.
+
 ## Ce qui reste à construire, dans l'ordre
 
 Voir `docs/feuille-de-route.md`, tenue à jour. En bref :
 
-1. Serveur et comptes — en cours : la base Supabase existe, l'application n'y
-   est pas encore branchée.
+1. Serveur et comptes — presque fini : comptes, équipe et synchronisation
+   marchent ; reste l'essai sur vrais téléphones et l'enregistrement côté
+   serveur.
 2. Bibliothèque produits et création d'article par OCR.
 3. Devis → vente → facture → avoir.
 4. Fiche client.
@@ -90,10 +95,17 @@ achat, facture et journal.
 Ce qui n'a jamais été vérifié sur un vrai téléphone : l'impression, la création
 du fichier Excel, la caméra en direct. À tester sur place.
 
-Base de données Supabase créée le 15 novembre 2026 (projet `daftar`, Paris),
-vide et non branchée. Toute modification du schéma passe par une nouvelle
-migration dans `supabase/migrations/`, puis les contrôles de sécurité de
-Supabase.
+Base de données Supabase (projet `daftar`, Paris), branchée le 16 novembre
+2026. Sans compte, l'application marche comme avant, dans le téléphone. Avec
+un compte relié à un magasin, chaque élément de `S` qui change est envoyé à la
+table `elements`, et les changements des autres téléphones arrivent toutes les
+20 secondes. Le code est à la fin du bloc d'interface (« compte et
+synchronisation en ligne »), les fonctions pures `toRows`, `applyRow`,
+`fixCounters`, `fillCosts`, `renameTicket` avec la logique métier. Toute
+modification du schéma passe par une nouvelle migration dans
+`supabase/migrations/`, puis les contrôles de sécurité de Supabase.
+
+Ne jamais mettre en cache les réponses de `*.supabase.co` dans `sw.js`.
 
 Le magasin de démonstration s'appelle Tanja Trott : cinq articles, deux
 fournisseurs, six ventes, un retour, une facture. « Remettre les exemples »

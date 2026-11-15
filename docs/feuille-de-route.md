@@ -6,7 +6,8 @@ Où on en est, d'où on vient, où on va. Mise à jour à chaque étape terminé
  FAIT                          EN COURS              À VENIR
  ─────────────────────────────┬─────────────────────┬──────────────────────────────────────
  Application de démonstration │ 1. Serveur          │ 2. Bibliothèque produits + OCR
- Base de données (fondation)  │    et comptes       │ 3. Devis → vente → facture → avoir
+ Base de données (fondation)  │    et comptes :     │ 3. Devis → vente → facture → avoir
+ Comptes et synchronisation   │    essai terrain    │
                               │                     │ 4. Fiche client
                               │                     │ 5. Impression thermique
                               │                     │ 6. Envois WhatsApp automatiques
@@ -50,30 +51,61 @@ des factures sans trou, factures non modifiables, remise du vendeur plafonnée,
 prix d'achat invisibles pour le vendeur. 20 contrôles passés avec des comptes
 fictifs. Détails dans `docs/base-de-donnees.md`.
 
-**Rien n'a changé pour l'utilisateur** : l'application n'est pas encore
-branchée sur la base.
+### Les comptes et la synchronisation — 16 novembre 2026
+
+Dans Réglages, une carte « Compte en ligne » :
+
+- **Créer un compte, se connecter** par adresse e-mail et mot de passe.
+- **Mettre ce magasin en ligne** : le patron envoie tout ce que son téléphone
+  contient. C'est la reprise des données, sans perte.
+- **Équipe** : le patron ajoute son vendeur par son adresse e-mail, choisit
+  son rôle (vendeur, comptable, patron), peut le retirer.
+- **Ouvrir le magasin** sur un autre téléphone : tout revient.
+- **Synchronisation** : chaque modification part au serveur ; celles des
+  autres arrivent toutes les 20 secondes. Hors ligne, rien ne se perd.
+- Le **vendeur** ne reçoit jamais les prix d'achat, les achats ni le journal,
+  et ne peut pas repasser en patron.
+
+Vérifié par `test/sync.js` avec trois téléphones simulés contre la vraie base :
+18 contrôles passés, dont une vente du vendeur vue par le patron avec son coût,
+deux ventes hors ligne au même numéro correctement renumérotées, et un
+téléphone perdu dont tout revient sur un autre.
+
+**Jamais essayé sur un vrai téléphone.** À faire avant de confier
+l'application à un magasin.
 
 ## Où on en est
 
-### 1. Serveur et comptes — en cours
+### 1. Serveur et comptes — presque fini
 
-Fait : la base, les rôles, les règles d'accès.
+Fait : la base, les comptes, l'équipe, la reprise des données, la
+synchronisation, le test à trois téléphones.
 
-Reste à faire, dans l'ordre :
+Reste à faire :
 
-1. **Connexion** : chaque personne a son compte (adresse e-mail ou téléphone).
-   Le patron crée son magasin et invite son vendeur.
-2. **Reprise des données** : ce que le téléphone contient déjà passe dans la
-   base, une fois, sans perte.
-3. **Enregistrement côté serveur** : une vente marque l'unité vendue, inscrit
-   le mouvement de stock et l'écriture au journal en une seule opération.
-4. **Synchronisation** : deux téléphones du même magasin voient le même stock.
-   L'application continue de marcher sans réseau et rattrape au retour.
-5. **Vérification** : `test/smoke.js` étendu à la connexion et à deux
-   téléphones.
+1. **Régler l'envoi des e-mails de Supabase** (à faire par le propriétaire du
+   compte, voir plus bas). Sans ça, un nouveau compte ne peut pas se
+   connecter.
+2. **Essayer sur deux vrais téléphones**, en boutique, avec une vraie journée
+   de ventes.
+3. **Enregistrement côté serveur** : faire vérifier par le serveur les
+   plafonds d'argent et le stock, et remplir les 21 tables de la fondation.
+   Aujourd'hui, ces règles tournent dans le téléphone.
 
-Résultat attendu, visible : le patron et le vendeur se connectent sur leurs
-téléphones et voient le même magasin ; perdre un téléphone ne fait rien perdre.
+Résultat atteint : le patron et le vendeur se connectent sur leurs téléphones
+et voient le même magasin ; perdre un téléphone ne fait rien perdre.
+
+### Réglage Supabase à faire
+
+Dans le tableau de bord Supabase, projet `daftar`, rubrique Authentication :
+
+- **URL du site** : `https://khaliddinarcg-oss.github.io/DAFTAR/`, pour que le
+  lien de confirmation reçu par e-mail ramène dans l'application.
+- **Ou** désactiver « Confirm email » pendant la validation terrain : le compte
+  marche tout de suite, sans e-mail.
+
+L'offre gratuite n'envoie que quelques e-mails par heure : la seconde option
+est la plus simple pour des démonstrations.
 
 ## Où on va
 

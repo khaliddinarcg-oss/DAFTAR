@@ -3,8 +3,9 @@
 Supabase, offre gratuite, projet `daftar`, région Paris (eu-west-3).
 Identifiant du projet : `gfxpvuhfuarllqopbwlw`.
 
-Créée le 15 novembre 2026. **L'application n'y est pas encore branchée** :
-elle tourne toujours sur le `localStorage` du téléphone. La base est vide.
+Créée le 15 novembre 2026, branchée sur l'application le 16 novembre par la
+table `elements` (voir « La synchronisation » plus bas). Sans compte,
+l'application marche comme avant, dans le `localStorage` du téléphone.
 
 Les migrations sont dans `supabase/migrations/`, dans l'ordre où elles ont été
 appliquées. Toute modification passe par une nouvelle migration ; on ne
@@ -56,6 +57,46 @@ réécrit pas une migration déjà appliquée.
 
 Photos du catalogue : dossier de stockage `catalogue`, public en lecture,
 5 Mo maximum, JPEG, PNG ou WebP.
+
+## La synchronisation : table `elements`
+
+C'est elle que l'application utilise aujourd'hui. Chaque élément de l'état `S`
+(un article, une unité, un ticket, une facture, une écriture du journal…) est
+une ligne : `magasin_id`, `collection`, `cle` (l'identifiant de l'élément),
+`donnees` (l'élément en JSON), `supprime`, `version`.
+
+- **Envoi** : à chaque enregistrement, le téléphone compare chaque élément à
+  l'empreinte de ce qu'il a déjà envoyé, et n'envoie que ce qui a changé.
+- **Réception** : toutes les 20 secondes, au retour du réseau et au retour
+  dans l'application, il demande les lignes dont la `version` dépasse la
+  dernière reçue.
+- **Hors ligne** : rien ne se perd. Les modifications attendent et partent au
+  retour du réseau.
+- **Deux modifications du même élément** : la dernière envoyée l'emporte.
+  Deux encaissements simultanés sur le même crédit, depuis deux téléphones,
+  peuvent donc s'écraser ; le journal, lui, garde les deux écritures.
+- **Coûts à part** : le prix d'achat d'un article, d'une unité ou d'un ticket
+  voyage dans une ligne séparée (`stock$`, `units$`, `tickets$`). Avec les
+  achats (`buys`), les paiements fournisseurs (`pays`) et le journal (`ops`),
+  ces lignes sont **privées** : le serveur ne les envoie jamais à un vendeur.
+  Le vendeur peut en ajouter (l'écriture de sa vente au journal) sans pouvoir
+  les relire. Le coût d'une vente faite par le vendeur est calculé ensuite par
+  le téléphone du patron.
+- **Numéros** : deux tickets ou deux factures du même magasin ne portent
+  jamais le même numéro. Si deux téléphones hors ligne ont donné le même, le
+  second envoyé prend le numéro libre suivant, et le téléphone l'affiche dans
+  Réglages.
+- **Factures** : une ligne de facture ou d'avoir ne se modifie pas et ne se
+  supprime pas, même par le patron.
+- **Suppressions** : un élément se marque supprimé, il ne disparaît pas de la
+  base. Seul le patron supprime un article ou un fournisseur.
+
+Fonctions appelées par l'application : `mes_magasins()`, `equipe(m)`,
+`ajouter_membre(m, courriel, rôle)`. Un magasin garde toujours au moins un
+patron.
+
+Les 21 tables de la fondation restent la cible de l'étape « enregistrement
+côté serveur » : elles sont prêtes et vides.
 
 ## Les rôles
 
@@ -111,14 +152,25 @@ Contrôles de sécurité de Supabase : une seule remarque restante, voulue — l
 table `compteurs` n'a aucune politique, donc personne n'y accède sauf le
 serveur.
 
+## Comptes de test
+
+Deux comptes servent à `test/sync.js` : `patron.essai@daftar.test` et
+`vendeur.essai@daftar.test`, créés directement dans la base (adresses
+fictives, aucun e-mail ne part). Le mot de passe n'est pas dans le dépôt. Le
+test crée un magasin « Tanja Trott » qu'il faut supprimer ensuite.
+
 ## Ce qui reste ouvert
 
-- **Stock et journal ne se mettent pas encore à jour seuls.** Marquer l'unité
+- **La logique métier tourne encore dans le téléphone.** Le serveur vérifie
+  les droits, les numéros et les factures, mais pas les plafonds d'argent ni
+  le stock : un téléphone modifié pourrait les contourner. C'est l'étape
+  « enregistrement côté serveur ».
+- **Stock et journal ne se mettent pas encore à jour seuls** dans les tables
+  de la fondation. Marquer l'unité
   vendue, inscrire le mouvement de stock et l'écriture au journal reste, pour
   l'instant, le travail de l'application. À passer côté serveur, en une seule
   opération, quand l'application sera branchée : une vente ne doit jamais être
   à moitié enregistrée.
-- **Le dernier patron peut se retirer** du magasin. À interdire.
 - **Le catalogue partagé n'a pas de modération.** Chaque magasin corrige ses
   propres fiches ; les fiches des autres ne se corrigent pas encore.
 - **Offre gratuite** : le projet se met en pause après environ une semaine
