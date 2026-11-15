@@ -1,5 +1,5 @@
 /* Daftar — service worker: the app works without connexion after the first load. */
-const V = 'daftar-v1';
+const V = 'daftar-v1-2';
 const CORE = ['./', './index.html', './manifest.webmanifest', './img/icon-192.png', './img/icon-512.png'];
 
 self.addEventListener('install', e => {

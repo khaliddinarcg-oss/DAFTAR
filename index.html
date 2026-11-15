@@ -187,6 +187,23 @@ h1 span{overflow-wrap:anywhere}
 .cam{position:relative;background:#000;border-radius:8px;overflow:hidden}
 .cam video{width:100%;max-height:58vh;display:block;object-fit:cover}
 .cam-box{position:absolute;inset:14% 14%;border:2px solid var(--led);border-radius:10px;box-shadow:0 0 0 100vmax rgba(0,0,0,.35)}
+/* the printed catalogue */
+.cat{background:#fff;color:#14171a;padding:16px;border-radius:2px;display:flex;flex-direction:column;gap:12px}
+.cat-head{display:flex;align-items:center;gap:12px;border-bottom:2px solid #14171a;padding-bottom:8px;font-size:13px}
+.cat-head b{font-family:var(--display);font-size:18px;letter-spacing:.02em}
+.cat-logo{max-height:40px;max-width:120px;object-fit:contain}
+.cat-g{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.cat-i{border:1px solid #c9ced4;border-radius:4px;padding:8px;display:flex;flex-direction:column;gap:4px;font-size:11px}
+.cat-top{display:flex;justify-content:space-between;align-items:flex-start;gap:6px}
+.cat-img{width:84px;height:84px;object-fit:cover;border-radius:3px;background:#eef1f3;flex:none}
+.cat-qr{width:72px;flex:none}
+.cat-n{font-family:var(--display);font-weight:600;font-size:14px;line-height:1.15}
+.cat-r{color:#687078;font-size:10.5px}
+.cat-s{display:flex;flex-direction:column;gap:1px;color:#2b3137}
+.cat-b{display:flex;justify-content:space-between;align-items:baseline;border-top:1px solid #e2e6ea;padding-top:5px;margin-top:2px}
+.cat-p{font-family:var(--display);font-weight:600;font-size:15px}
+.cat-q{font-size:10.5px;color:#687078}
+@media (max-width:420px){.cat-g{grid-template-columns:1fr}}
 </style>
 </head>
 <body>
@@ -634,6 +651,20 @@ const views={
   return `<div class="row"><h2>Fournisseurs</h2><button class="btn primary" data-act="add-sup">Nouveau fournisseur</button></div>
   <p class="meta">${S.sups.length} fournisseur${S.sups.length>1?'s':''}${due?` · <b>${dh(due)}</b> à payer`:' · rien à payer'}</p>
   ${bar('fournisseurs')}${l.map(supCard).join('')||empty('Aucun fournisseur dans cette vue.')}`},
+ catalogue(){paper={name:'catalogue',fmt:'a4'};
+  if(!S.stock.length)return `<h2>Catalogue</h2>${empty('Aucun article. Cr\u00e9ez vos articles dans Stock, ou touchez le bouton ci-dessous pour charger les exemples.')}
+   <div class="acts"><button class="btn primary" data-act="reseed">Charger les exemples</button><button class="btn" data-act="add-stock">Nouvel article</button></div>`;
+  return `<h2>Catalogue</h2>
+  <p class="meta">\u00c0 imprimer et \u00e0 poser sur le comptoir. Chaque article porte son QR : scann\u00e9, il ouvre sa fiche compl\u00e8te. Les QR pointent vers <b>${esc(appUrl()||'cette application')}</b>.</p>
+  ${printBar()}
+  <div class="cat" id="paper">
+   <div class="cat-head">${S.info.logo?`<img class="cat-logo" src="${esc(S.info.logo)}" alt="">`:''}<div><b>${esc(S.shop)}</b><div>Catalogue \u00b7 ${new Date().toLocaleDateString('fr-FR')}</div></div></div>
+   <div class="cat-g">${S.stock.map(r=>{const st=stockState(S,r),q=qtyOf(S,r);
+    const sp=Object.entries(SPEC).filter(([k])=>(r.spec||{})[k]).slice(0,6);
+    return `<div class="cat-i"><div class="cat-top">${r.img?`<img class="cat-img" src="${esc(r.img)}" alt="">`:'<div class="cat-img"></div>'}<div class="cat-qr">${qr(artLabel(r).code)}</div></div>
+     <div class="cat-n">${esc(full(r))}</div><div class="cat-r">${esc(r.ref||KIND[r.kind])}</div>
+     ${sp.length?`<div class="cat-s">${sp.map(([k,lb])=>`<span>${lb} : <b>${esc(r.spec[k])}</b></span>`).join('')}</div>`:''}
+     <div class="cat-b"><span class="cat-p">${dh(r.price)}</span><span class="cat-q">${q>0?q+' en stock':'\u00e9puis\u00e9'}</span></div></div>`}).join('')}</div></div>`},
  stock(){const l=pick('stock',S.stock);
   return `<div class="row"><h2>Articles</h2><button class="btn primary" data-act="new-recv">Réception</button></div>
   <p class="meta">Chaque article a une fiche : marque, modèle, caractéristiques, prix, garantie. On choisit toujours dans la liste, on ne tape pas un nom deux fois.</p>
@@ -681,10 +712,10 @@ const views={
   <input id="search" type="search" placeholder="Chercher : nom, téléphone, n° de série" value="${esc(q)}" aria-label="Chercher une vente">
   ${bar('garantie')}<div class="list">${l.map(saleCard).join('')||empty('Aucune vente dans cette vue.')}</div>`}
 };
-const ALL=[['Accueil',['accueil','reglages']],['Vente',['vente','tickets']],['Stock',['stock','fournisseurs','analyse','inventaire']],['Suivi',['credit','demandes','livraisons','garantie']],['Compta',['journal','factures']]];
-const SELLER={accueil:1,reglages:1,fournisseurs:1,vente:1,tickets:1,stock:1,inventaire:1,credit:1,demandes:1,livraisons:1,garantie:1};
+const ALL=[['Accueil',['accueil','reglages']],['Vente',['vente','tickets']],['Stock',['stock','catalogue','fournisseurs','analyse','inventaire']],['Suivi',['credit','demandes','livraisons','garantie']],['Compta',['journal','factures']]];
+const SELLER={accueil:1,reglages:1,fournisseurs:1,catalogue:1,vente:1,tickets:1,stock:1,inventaire:1,credit:1,demandes:1,livraisons:1,garantie:1};
 const groups=()=>isP()?ALL:ALL.map(([n,ks])=>[n,ks.filter(k=>SELLER[k])]).filter(x=>x[1].length);
-const SUB={accueil:"Aujourd'hui",reglages:'Réglages',vente:'Vendre',tickets:'Tickets',stock:'Articles',fournisseurs:'Fournisseurs',analyse:'Analyse',inventaire:'Inventaire',credit:'Crédit',demandes:'Demandes',livraisons:'Envois',garantie:'Garantie',journal:'Journal',factures:'Factures'};
+const SUB={accueil:"Aujourd'hui",reglages:'Réglages',vente:'Vendre',tickets:'Tickets',stock:'Articles',catalogue:'Catalogue',fournisseurs:'Fournisseurs',analyse:'Analyse',inventaire:'Inventaire',credit:'Crédit',demandes:'Demandes',livraisons:'Envois',garantie:'Garantie',journal:'Journal',factures:'Factures'};
 const tab=()=>{const h=location.hash.slice(1),ok=views[h]&&(isP()||SELLER[h]);return ok?h:'accueil'};
 function render(keepFocus){const t=tab(),G=groups(),g=G.find(x=>x[1].includes(t));
   const sub=g[1].length>1?`<div class="subnav">${g[1].map(k=>`<a href="#${k}"${k===t?' aria-current="page"':''}>${SUB[k]}</a>`).join('')}</div>`:'';
@@ -1028,7 +1059,7 @@ const acts={
    d=>{v.repairs.push({d:d.d,what:d.what,price:n(d.price)});op(S,'reparation','Réparation · '+d.what+' · '+v.name,n(d.price),d.d,v.ticket)},
    d=>!d.what.trim()?'Dites ce qui a été réparé.':days(d.d)>0?'La date ne peut pas être dans le futur.':'')},
  touch(id){const l=find('leads',id);l.last=plus(0);if(l.status==='nouveau')l.status='discussion';setTimeout(upd,300)},
- reseed(_,b){if(sure(b)){const r=S.role,pin=S.pin,lg=S.info.logo;S=seed();S.role=r;S.pin=pin;if(lg)S.info.logo=lg;upd()}},
+ reseed(_,b){closeSheet();if(sure(b)){const r=S.role,pin=S.pin,lg=S.info.logo;S=seed();S.role=r;S.pin=pin;if(lg)S.info.logo=lg;upd()}},
  clear(_,b){if(sure(b)){S={shop:S.shop,info:S.info,rules:S.rules,role:'patron',pin:S.pin,pays:[],demo:false,seq:0,sn:0,fseq:0,aseq:0,ops:[],invoices:[],buys:[],sups:S.sups,credits:[],leads:[],dels:[],sales:[],stock:[],units:[],tickets:[],inv:null,lastInv:null};upd()}},
  rm(id,b){const c=b.dataset.col;
   if(c==='stock'){const r=refOf(S,id),q=qtyOf(S,r);
@@ -1087,8 +1118,9 @@ function handleCode(txt){const m=/^DAFTAR:([AURT]):([\s\S]+)$/.exec(txt||'');
    return panel(txt?`<h2>Étiquette non reconnue</h2>
     <p class="meta">Le QR a bien été lu, mais rien dans ce magasin ne lui correspond.</p>
     <div class="card"><div class="meta">Contenu lu</div><div class="code">${esc(txt)}</div></div>
-    <p class="meta">Si vous utilisez la feuille de démonstration, touchez « Remettre les exemples » dans Réglages, puis réessayez.</p>
-    <div class="acts"><button class="btn" type="button" data-act="copy-scan">Copier ce texte</button><a class="btn" href="#reglages" data-act="close">Réglages</a>${closeBtn}</div>`
+    ${S.stock.length?`<p class="meta">Le magasin contient ${S.stock.length} article${S.stock.length>1?'s':''}, mais aucun ne porte ce code. L'étiquette vient peut-être d'une autre installation : réimprimez-la depuis la fiche de l'article, onglet QR.</p>`
+     :`<p class="meta"><b>Le magasin est vide</b> : aucun article n'a encore été créé, donc aucune étiquette ne peut correspondre. Chargez les exemples, ou créez vos articles.</p>`}
+    <div class="acts">${S.stock.length?'':'<button class="btn primary" type="button" data-act="reseed">Charger les exemples</button>'}<button class="btn" type="button" data-act="copy-scan">Copier ce texte</button>${closeBtn}</div>`
    :`<h2>QR non lu</h2><p class="meta">La photo n'a pas permis de lire un QR code. Approchez-vous pour que l'étiquette remplisse l'écran, tenez le téléphone bien à plat, évitez les reflets et l'ombre.</p>
     <div class="acts"><button class="btn primary" type="button" data-act="scan">Reprendre la photo</button><button class="btn" type="button" data-act="pick">Choisir une image</button><button class="btn" type="button" data-act="type-code">Saisir le code</button>${closeBtn}</div>`)}
   if(g.type==='recv')return receiveFromCode(g.txt);
