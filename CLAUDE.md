@@ -15,6 +15,7 @@ interface. Pas d'étape de compilation, pas de dépendances à installer.
 | `index.html` | L'application entière |
 | `manifest.webmanifest`, `sw.js`, `img/` | Installation sur l'écran d'accueil et fonctionnement hors connexion |
 | `test/smoke.js` | Test de bout en bout dans un vrai navigateur |
+| `supabase/migrations/` | Schéma de la base Supabase, une migration par étape |
 | `README.md` | Mise en ligne, APK, reprise du code |
 
 Hébergé sur GitHub Pages : <https://khaliddinarcg-oss.github.io/DAFTAR/>.
@@ -61,11 +62,14 @@ Chrome local ; sans eux, le script le dit et sort sans échouer.
 
 ## Ce qui reste à construire, dans l'ordre
 
-1. Serveur et comptes : les données vivent aujourd'hui dans un seul téléphone.
-2. Fiche client : le nom est recopié sur chaque vente, il n'y a pas d'historique.
-3. Impression thermique Bluetooth, rouleaux 58 et 80 mm.
-4. Rappels automatiques par WhatsApp Business API.
-5. Multi-magasin et transferts de stock.
+Voir `docs/feuille-de-route.md`, tenue à jour. En bref :
+
+1. Serveur et comptes — en cours : la base Supabase existe, l'application n'y
+   est pas encore branchée.
+2. Bibliothèque produits et création d'article par OCR.
+3. Devis → vente → facture → avoir.
+4. Fiche client.
+5. Impression thermique, envois WhatsApp, multi-magasin, fournisseurs.
 
 ## Conventions
 
@@ -86,6 +90,11 @@ achat, facture et journal.
 Ce qui n'a jamais été vérifié sur un vrai téléphone : l'impression, la création
 du fichier Excel, la caméra en direct. À tester sur place.
 
+Base de données Supabase créée le 15 novembre 2026 (projet `daftar`, Paris),
+vide et non branchée. Toute modification du schéma passe par une nouvelle
+migration dans `supabase/migrations/`, puis les contrôles de sécurité de
+Supabase.
+
 Le magasin de démonstration s'appelle Tanja Trott : cinq articles, deux
 fournisseurs, six ventes, un retour, une facture. « Remettre les exemples »
 dans Réglages le recharge.
@@ -98,7 +107,8 @@ dans Réglages le recharge.
 | `docs/journal-des-decisions.md` | Ce qui est tranché, et les erreurs déjà commises |
 | `docs/regles.md` | Toutes les limites appliquées par l'application |
 | `docs/parcours-demo.md` | Le script de démonstration en boutique, avec les phrases en darija |
-| `docs/feuille-de-route.md` | Ce qui reste à construire, dans l'ordre |
+| `docs/feuille-de-route.md` | Ce qui est fait, où on en est, ce qui reste, dans l'ordre |
+| `docs/base-de-donnees.md` | La base Supabase : tables, rôles, règles appliquées par le serveur |
 | `tools/etiquettes.py` | Génère une feuille d'étiquettes QR à imprimer |
 
 ## Comment travailler sur ce projet

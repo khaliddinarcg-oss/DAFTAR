@@ -18,6 +18,12 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
 | Deux rôles plutôt qu'un | Le patron ne confie pas ses marges ; le vendeur garde ce qu'il lui faut pour vendre |
 | Données d'exemple courtes | Cinq articles, deux fournisseurs, six ventes : un vendeur doit suivre du regard pendant la démonstration |
 | Export Excel à cinq feuilles | Journal, ventes, factures, crédits, stock. CSV en plus pour l'import dans un logiciel comptable |
+| Supabase, offre gratuite, région Paris (15 nov. 2026) | Base, comptes et stockage des photos prêts à l'emploi, sans serveur à administrer ; gratuit tant que l'on montre le produit, environ 250 DH par mois ensuite. Paris est la région proposée la plus proche de Tanger |
+| Catalogue partagé, séparé du stock du magasin | Une fiche produit correcte n'est saisie qu'une fois et sert à tous les magasins ; chaque magasin garde son prix, son stock, ses numéros de série |
+| Prix d'achat dans des tables à part | Le vendeur ne les reçoit jamais du serveur : la séparation des rôles devient une vraie sécurité, plus seulement un affichage |
+| Numéros de ticket, facture et avoir donnés par le serveur | Deux téléphones du même magasin ne peuvent ni doubler un numéro ni laisser un trou |
+| Trois rôles : patron, vendeur, comptable | Le comptable lit tout, y compris les coûts, et n'écrit rien |
+| L'OCR par IA plutôt que l'OCR gratuit du téléphone | L'OCR gratuit lit du texte brut ; l'IA remplit les champs de la fiche. Moins d'un centime de dirham par fiche ; demande le serveur pour garder la clé |
 
 ## Erreurs commises, pour ne pas les refaire
 
