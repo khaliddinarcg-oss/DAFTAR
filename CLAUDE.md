@@ -75,3 +75,39 @@ Chrome local ; sans eux, le script le dit et sort sans échouer.
 - Pas de bibliothèque ajoutée sans raison : les cinq actuelles (jsQR,
   qrcode-generator, SheetJS, html2canvas, jsPDF) viennent d'un CDN et sont mises
   en cache par le service worker.
+
+## État au 15 novembre 2026
+
+Ce qui fonctionne et a été vérifié dans un navigateur : le scan d'une étiquette
+d'article, d'un fournisseur, d'un lien `#qr-<id>` et d'un code inconnu ; le
+panier à plusieurs lignes ; les quinze écrans ; les calculs de vente, crédit,
+achat, facture et journal.
+
+Ce qui n'a jamais été vérifié sur un vrai téléphone : l'impression, la création
+du fichier Excel, la caméra en direct. À tester sur place.
+
+Le magasin de démonstration s'appelle Tanja Trott : cinq articles, deux
+fournisseurs, six ventes, un retour, une facture. « Remettre les exemples »
+dans Réglages le recharge.
+
+## Les documents à lire avant de décider quoi que ce soit
+
+| Fichier | Contenu |
+| --- | --- |
+| `docs/contexte-produit.md` | Pour qui, ce que la recherche a montré, les choix et leurs raisons |
+| `docs/journal-des-decisions.md` | Ce qui est tranché, et les erreurs déjà commises |
+| `docs/regles.md` | Toutes les limites appliquées par l'application |
+| `docs/parcours-demo.md` | Le script de démonstration en boutique, avec les phrases en darija |
+| `docs/feuille-de-route.md` | Ce qui reste à construire, dans l'ordre |
+| `tools/etiquettes.py` | Génère une feuille d'étiquettes QR à imprimer |
+
+## Comment travailler sur ce projet
+
+- Le produit est en validation terrain. Avant d'ajouter une fonction, demander
+  si un vendeur l'a réclamée : la liste de ce qui manque est déjà longue et
+  l'ordre compte plus que la quantité.
+- Ne pas casser les règles de `docs/regles.md` sans le dire.
+- Lancer `node test/smoke.js` avant chaque publication. Un push sur `main`
+  republie le site en une à deux minutes.
+- Écrire en français, dans l'interface comme dans les commits. Les messages
+  envoyés aux clients sont en darija, en lettres latines.
