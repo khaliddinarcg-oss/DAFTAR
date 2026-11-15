@@ -636,8 +636,10 @@ const views={
    <div class="acts"><button class="btn" data-act="to-boss">Revenir en mode patron</button></div></div>`}
   <p class="foot">Les données restent sur ce téléphone uniquement.</p>`},
  vente(){const refs=S.stock.filter(r=>qtyOf(S,r)>0);
+  if(!S.stock.length)return `<div class="card bad"><div class="name">Le magasin est vide</div><div class="meta">Aucun article n'existe, donc aucune étiquette ne peut être reconnue et rien ne peut être vendu.</div>
+   <div class="acts"><button class="btn primary" data-act="reseed">Charger les exemples</button><button class="btn" data-act="add-stock">Créer un article</button></div></div>`;
   return `<button class="btn primary wide big" data-act="scan">Scanner l'étiquette de l'article</button>
-  <div class="acts"><button class="btn" data-act="pick">Choisir une image</button><button class="btn" data-act="type-code">Saisir le code</button></div>
+  <div class="acts"><button class="btn" data-act="pick">Choisir une image</button><button class="btn" data-act="type-code">Saisir le code</button><button class="btn link" data-act="self-test">Tester le scan</button></div>
   <p class="meta">Chaque article a son QR. Scannez-en plusieurs : ils s'ajoutent au panier, puis une seule vente et une seule facture.</p>
   ${cart.length?`<h2>Panier</h2>${cart.map(cartLine).join('')}
    <div class="card ok"><div class="row"><div class="name">Total</div><div class="amt">${dh(cartTotal())}</div></div>
@@ -656,6 +658,7 @@ const views={
    <div class="acts"><button class="btn primary" data-act="reseed">Charger les exemples</button><button class="btn" data-act="add-stock">Nouvel article</button></div>`;
   return `<h2>Catalogue</h2>
   <p class="meta">\u00c0 imprimer et \u00e0 poser sur le comptoir. Chaque article porte son QR : scann\u00e9, il ouvre sa fiche compl\u00e8te. Les QR pointent vers <b>${esc(appUrl()||'cette application')}</b>.</p>
+  <div class="acts"><button class="btn" data-act="self-test">Tester le scan</button></div>
   ${printBar()}
   <div class="cat" id="paper">
    <div class="cat-head">${S.info.logo?`<img class="cat-logo" src="${esc(S.info.logo)}" alt="">`:''}<div><b>${esc(S.shop)}</b><div>Catalogue \u00b7 ${new Date().toLocaleDateString('fr-FR')}</div></div></div>
@@ -932,7 +935,13 @@ const acts={
  async scan(){closeSheet();if(await liveScan())return;$('#cam').click()},
  pick(){closeSheet();$('#pick').click()},
  'copy-scan'(){try{navigator.clipboard.writeText(S.lastScan||'').then(()=>say('Texte copié.'),()=>say('Copie refusée par le téléphone.'))}catch(e){say('Copie impossible ici.')}},
- 'type-code'(){sheet('Saisir le code',[{k:'c',l:"Référence, numéro de série, nom de l'article ou numéro de ticket"}],d=>handleCode(d.c.trim()))},
+ 'type-code'(){sheet('Saisir le code',[{k:'c',l:"Référence, numéro de série, nom de l'article ou numéro de ticket"}],d=>runCode(d.c.trim()))},
+ 'self-test'(){if(!S.stock.length)return say("Le magasin est vide : chargez les exemples d'abord.");
+  const r=S.stock[0],code=artLabel(r).code;
+  panel(`<h2>Test du scan</h2><p class="meta">On passe le code du premier article dans la même mécanique qu'un vrai scan, sans caméra.</p>
+   <div class="card"><div class="meta">Code envoyé</div><div class="code">${esc(code)}</div></div>
+   <div class="acts"><button class="btn primary" type="button" data-act="self-go" data-id="${esc(code)}">Lancer le test</button>${closeBtn}</div>`)},
+ 'self-go'(code){runCode(code)},
  logo(){picFor='';$('#logo').click()},
  pic(id){picFor=id;$('#logo').click()},
  'to-seller'(){S.role='vendeur';location.hash='#reglages';upd()},
@@ -1093,7 +1102,7 @@ async function liveScan(){
     if(v.readyState>=2&&v.videoWidth){const w=Math.min(720,v.videoWidth),hh=Math.max(8,Math.round(v.videoHeight*w/v.videoWidth));
       C.width=w;C.height=hh;x.drawImage(v,0,0,w,hh);
       try{const r=jsQR(x.getImageData(0,0,w,hh).data,w,hh,{inversionAttempts:'attemptBoth'});
-        if(r&&r.data){const d=r.data;camStop();closeSheet();return handleCode(d)}}catch(e){}}
+        if(r&&r.data){const d=r.data;camStop();closeSheet();return runCode(d)}}catch(e){camStop();closeSheet();return runCode('')}}
     requestAnimationFrame(tick)};
   requestAnimationFrame(tick);return true}
 function decode(file){return new Promise(res=>{const url=URL.createObjectURL(file),img=new Image();
@@ -1112,6 +1121,28 @@ function decode(file){return new Promise(res=>{const url=URL.createObjectURL(fil
    try{for(const t of plan){out=read(t[0],t[1],t[2],t[3],t[4]);if(out)break}}catch(e){}
    URL.revokeObjectURL(url);res(out)};
   img.onerror=()=>{URL.revokeObjectURL(url);res(null)};img.src=url})}
+function runCode(txt){try{handleCode(txt)}catch(e){panel(`<h2>Erreur pendant la lecture</h2>
+  <div class="card bad"><div class="meta">Message</div><div class="code">${esc((e&&e.message)||String(e))}</div></div>
+  <div class="card"><div class="meta">Contenu lu</div><div class="code">${esc(txt||'(vide)')}</div></div>
+  <div class="acts">${closeBtn}</div>`)}}
+const low=x=>String(x??'').trim().toLowerCase();
+/* one tolerant resolver: an id, an internal reference, a name or a serial all find the thing */
+function resolveCode(txt){if(!txt)return null;
+  let s=String(txt).trim();
+  const u1=/#qr-([A-Za-z0-9_.-]+)/.exec(s);if(u1)s=u1[1];
+  const d=/^DAFTAR:([AURTF]):([\s\S]+)$/i.exec(s);
+  const hint=d?d[1].toUpperCase():'',body=d?d[2]:s,parts=body.split('|').map(x=>x.trim()),key=parts[0];
+  if(hint==='A'&&key==='1')return{type:'recv',txt:body};
+  const t=S.tickets.find(x=>low(x.no)===low(key));if(t)return{type:'ticket',o:t};
+  const u=S.units.find(x=>low(x.id)===low(key)||low(x.serial)===low(key))||(parts[2]?S.units.find(x=>low(x.serial)===low(parts[2])):null);
+  if(u)return{type:'unit',o:u};
+  const r=S.stock.find(x=>low(x.id)===low(key))||S.stock.find(x=>x.ref&&low(x.ref)===low(key))
+    ||S.stock.find(x=>low(full(x))===low(parts[1]))||S.stock.find(x=>x.ref&&low(x.ref)===low(parts[2]))
+    ||S.stock.find(x=>low(full(x))===low(key));
+  if(r)return{type:'art',o:r};
+  const f=S.sups.find(x=>low(x.id)===low(key))||S.sups.find(x=>low(x.name)===low(parts[1]))||S.sups.find(x=>low(x.name)===low(key));
+  if(f)return{type:'sup',o:f};
+  return null}
 function handleCode(txt){const m=/^DAFTAR:([AURT]):([\s\S]+)$/.exec(txt||'');
   const g=resolveCode(txt);
   if(!g){S.lastScan=txt||'';save();
@@ -1136,7 +1167,7 @@ function handleCode(txt){const m=/^DAFTAR:([AURT]):([\s\S]+)$/.exec(txt||'');
 async function readPhoto(f){if(!f)return;
   if(!window.jsQR)return say("Le lecteur de QR n'a pas pu se charger. Vérifiez la connexion et rechargez la page.");
   say('Lecture du QR en cours\u2026');
-  const txt=await decode(f);handleCode(txt)}
+  const txt=await decode(f);runCode(txt)}
 $('#cam').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';readPhoto(f)});
 $('#pick').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';readPhoto(f)});
 
@@ -1163,7 +1194,7 @@ if(SOLO&&'serviceWorker'in navigator)addEventListener('load',()=>navigator.servi
 function fromLink(){const x=location.hash.slice(1);
   if(!/^qr-/i.test(x))return false;
   const key=x.slice(3);location.hash='#accueil';
-  setTimeout(()=>handleCode('DAFTAR:A:'+key),60);return true}
+  setTimeout(()=>runCode('DAFTAR:A:'+key),60);return true}
 addEventListener('hashchange',()=>{if(fromLink())return;render();scrollTo(0,0)});
 render();fromLink();
 }
