@@ -12,7 +12,7 @@
 const path=require('path');
 const {chromium}=require('playwright');
 const ONLY=process.argv[2];
-const TABS=['accueil','reglages','vente','tickets','stock','catalogue','fournisseurs','analyse','inventaire','credit','demandes','livraisons','garantie','journal','factures'];
+const TABS=['accueil','reglages','vente','tickets','stock','catalogue','fournisseurs','analyse','inventaire','credit','demandes','livraisons','garantie','bord','clotures','journal','factures'];
 /* outside the app (camera, files, network, account) or wiping everything: covered elsewhere */
 const SKIP=new Set(['clear','reseed','logo','pic','pick','scan','fiche','go-online','login','signup','logout','sync-now','team','team-add','team-rm','open-shop','print','copy','copy-scan']);
 const BAD=/undefined|NaN|\[object |Invalid Date|null DH/;

@@ -76,3 +76,14 @@ prix d'achat, les achats ni le journal (voir `docs/base-de-donnees.md`).
 | Réglages du magasin | Nom, facturation, remise maximale, délai de retour changés par un autre que le patron |
 | Vente encaissée | Supprimer un ticket ou une écriture du journal ; changer les montants d'un ticket (même le patron : retour ou échange) |
 | Lecture par IA | Plus de 60 analyses de fiche par magasin et par jour ; un compte qui n'est ni patron ni vendeur du magasin |
+
+## Clôtures et caisse
+
+| Règle | Ce qui se passe |
+| --- | --- |
+| Clôture automatique | Chaque journée se clôture seule à minuit ; aucune action n'est demandée |
+| Journée verrouillée | Rien de nouveau ne s'écrit dans une journée passée. Une réception peut garder la date du bon du fournisseur pour le stock, mais son paiement s'inscrit au journal du jour, avec la mention « document du … » ; une réparation datée d'une journée clôturée est refusée |
+| Comptage de la caisse | Possible plusieurs fois dans la journée ; le dernier compte est gardé à minuit. Le fond laissé ne dépasse jamais l'argent compté |
+| Comptage à l'aveugle | Le vendeur compte sans voir la caisse attendue ; seul le patron voit l'attendu et l'écart |
+| Caisse attendue | Part du dernier comptage (ce qui a été laissé en caisse), plus tous les mouvements depuis. Avant le tout premier comptage, seulement les mouvements du jour |
+| Tableau de bord, clôtures, rapports | Réservés au patron |

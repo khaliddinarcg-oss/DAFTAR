@@ -36,7 +36,7 @@ const EXE='/usr/bin/google-chrome';
     const s=document.querySelector('#sheet');return{hidden:s.hidden,txt:(s.textContent||'').slice(0,90)}}catch(e){return{err:String(e)}}});
   console.log('scan inconnu:',JSON.stringify(scan4));
   // 5. walk every tab
-  const tabs=['accueil','reglages','vente','tickets','stock','catalogue','fournisseurs','analyse','inventaire','credit','demandes','livraisons','garantie','journal','factures'];
+  const tabs=['accueil','reglages','vente','tickets','stock','catalogue','fournisseurs','analyse','inventaire','credit','demandes','livraisons','garantie','bord','clotures','journal','factures'];
   for(const t of tabs){
     const res=await page.evaluate(async t=>{location.hash='#'+t;await new Promise(r=>setTimeout(r,120));
       const v=document.querySelector('#view');return{len:(v.textContent||'').length,head:(v.textContent||'').slice(0,40)}},t);

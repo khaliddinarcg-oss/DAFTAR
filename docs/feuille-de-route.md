@@ -122,6 +122,25 @@ Aussi : une couverture de catalogue sans marque (« F1 Electric Scooter »)
 n'est plus rejetée : la fiche s'ouvre avec le modèle et la photo, et conseille
 de photographier la page « Specifications ».
 
+### Clôtures, caisse et tableau de bord — 16 novembre 2026
+
+- **Clôture automatique** de chaque journée à minuit ; la journée passée est
+  verrouillée.
+- **Comptage de la caisse** depuis l'Accueil, à l'aveugle pour le vendeur ;
+  le patron voit l'attendu, le compté, l'écart, ce qui a été retiré et ce qui
+  a été laissé pour le lendemain.
+- **Compta, Clôtures** : la journée en cours, les journées clôturées, les
+  semaines et les mois, chacun avec un rapport A4 à imprimer ou à envoyer en
+  PDF.
+- **Compta, Tableau de bord** (patron) : jour, semaine ou mois ; chiffre
+  d'affaires, marge, ventes et panier moyen, trésorerie, comparaison avec la
+  période précédente, ventes jour par jour, crédits, livraisons, dettes
+  fournisseurs, valeur du stock, meilleures ventes.
+
+Limite : le verrou est appliqué par l'application, pas encore par le
+serveur. Un téléphone resté hors ligne plusieurs jours envoie ses ventes à
+leur vraie date en revenant, dans une journée déjà clôturée.
+
 ### Le fournisseur obligatoire à la réception — 16 novembre 2026
 
 - Un article peut être créé sans fournisseur ; il porte un **fournisseur

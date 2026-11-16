@@ -138,6 +138,16 @@ nav a{font-size:11px;letter-spacing:.02em}
 .pos{color:var(--ok)}.neg{color:var(--accent)}
 .kpis.three{grid-template-columns:repeat(3,1fr)}
 .kpis.three .kpi b{font-size:16px}
+.chart{display:flex;align-items:flex-end;gap:3px;height:120px;padding-top:8px;border-bottom:1px solid var(--line)}
+.chart i{flex:1;min-height:2px;background:var(--led);border-radius:2px 2px 0 0;opacity:.85}
+.chart i.now{background:var(--accent)}
+.chart-l{display:flex;justify-content:space-between;font-size:11px;color:var(--muted);margin-top:4px}
+.kpi small{font-size:11px;color:var(--muted)}
+.kpi small.up{color:var(--ok)}.kpi small.down{color:var(--accent)}
+.rep h3{font-size:12px;margin:6px 0 2px;text-transform:uppercase;letter-spacing:.06em}
+.rep .inv-grid{table-layout:fixed}
+.rep .inv-grid td:first-child,.rep .inv-grid th:first-child{text-align:left;width:62%}
+.rep .inv-grid td.r{text-align:right}
 select.full{width:100%}
 #logo{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .t-logo{max-height:72px;max-width:60%;align-self:center;object-fit:contain}
@@ -262,6 +272,8 @@ const serialTaken=(s,x)=>!!x&&s.units.some(u=>u.serial.toLowerCase()===x.toLower
 const floorPrice=(s,r)=>Math.round(r.price*(1-(s.rules||RULES).disc/100));
 const tooOld=(s,t)=>-days(t.date)>(s.rules||RULES).retDays;
 /* every movement of money is written once in the journal: amt > 0 comes in, amt < 0 goes out */
+/* every day closes on its own at midnight: nothing new is written into a day before today */
+const isClosedDay=d=>!!d&&d<plus(0);
 const op=(s,type,label,amt,d,ticket)=>{if(amt)s.ops.push({id:uid(),d:d||plus(0),type,label,amt,ticket:ticket||null})};
 
 /* what a shop sells: four kinds of vehicles, each tracked unit by unit with its serial number,
@@ -302,14 +314,16 @@ function supErr(s,refId,sup){
   if(sup===INITIAL&&s.buys.some(b=>b.ref===refId&&b.sup))return 'Le stock de départ ne sert qu’avant la première réception chez un fournisseur. Choisissez le fournisseur.';
   if(sup!==INITIAL&&!s.sups.some(f=>f.id===sup))return 'Fournisseur inconnu.';
   return ''}
-function receive(s,refId,n,cost,serials,date,sup,unpaid){const r=refOf(s,refId),out=[];
+/* date: the supplier's document; bookDate: the day the money is written in the journal (an earlier,
+   closed day cannot receive new entries, so the screen passes today) */
+function receive(s,refId,n,cost,serials,date,sup,unpaid,bookDate){const r=refOf(s,refId),out=[];
   if(cost)r.cost=cost;
-  const amt=(cost||r.cost||0)*n,d=date||plus(0),lab=n+' × '+((r.brand?r.brand+' ':'')+r.name);
+  const amt=(cost||r.cost||0)*n,d=date||plus(0),bd=bookDate||d,lab=n+' × '+((r.brand?r.brand+' ':'')+r.name);
   const bid=uid(),initial=sup===INITIAL;if(initial){sup='';unpaid=false}
   /* opening stock was paid before Daftar: no payment and nothing in this month's journal */
   s.buys.push({id:bid,sup:sup||'',d,ref:refId,label:lab,qty:n,amount:amt,paid:unpaid?0:amt,...(initial?{initial:true}:{})});
-  if(!unpaid&&!initial){s.pays.push({id:uid(),sup:sup||'',d,amount:amt,buy:bid});
-   op(s,'achat','Achat stock : '+lab+(sup?' · '+supName(s,sup):''),-amt,d)}
+  if(!unpaid&&!initial){s.pays.push({id:uid(),sup:sup||'',d:bd,amount:amt,buy:bid});
+   op(s,'achat','Achat stock : '+lab+(sup?' · '+supName(s,sup):'')+(bd!==d?' (document du '+d.split('-').reverse().join('/')+')':''),-amt,bd)}
   if(r.kind==='p'){r.qty+=n;return out}
   for(let i=0;i<n;i++){const u={id:uid(),ref:refId,serial:(serials&&serials[i])||autoSerial(s,r),cost:cost||r.cost||0,inDate:d,status:'stock',sup:sup||''};s.units.push(u);out.push(u)}
   return out}
@@ -426,6 +440,49 @@ function exchange(s,no,o,pick){const old=refund(s,no,{...o,exchange:true});if(!o
   if(nt)nt.diff=nt.total-old.ret.refund;return nt}
 
 const soldIn=(s,n)=>s.tickets.filter(t=>t.status==='ok'&&days(t.date)>-n);
+
+/* ---------- clôtures et tableau de bord (pure) ----------
+   A report covers any period [from, to], dates included: sales, returns, payment modes, margin, money in
+   and out, best sellers, sales per day. */
+const addDays=(d,n)=>iso(new Date(new Date(d+'T00:00:00').getTime()+n*DAY));
+const weekStart=d=>addDays(d,-((new Date(d+'T00:00:00').getDay()+6)%7));
+const monthEnd=m=>addDays(m+'-01',new Date(+m.slice(0,4),+m.slice(5,7),0).getDate()-1);
+function periodReport(s,from,to){const inP=d=>!!d&&d>=from&&d<=to;
+  const sold=s.tickets.filter(t=>inP(t.date)),ok=sold.filter(t=>t.status==='ok');
+  const back=s.tickets.filter(t=>t.ret&&inP(t.ret.d));
+  const ops=s.ops.filter(o=>inP(o.d)),sum=l=>l.reduce((a,x)=>a+x,0);
+  const pay={comptant:0,credit:0,livraison:0};sold.forEach(t=>{pay[t.pay]=(pay[t.pay]||0)+t.total});
+  const inBy={},outBy={};ops.forEach(o=>{const m=o.amt>0?inBy:outBy;m[o.type]=(m[o.type]||0)+Math.abs(o.amt)});
+  const top={};ok.forEach(t=>t.lines.forEach(l=>{const k=l.ref;top[k]=top[k]||{ref:k,model:l.model,qty:0,total:0};top[k].qty+=l.qty;top[k].total+=l.total}));
+  const perDay={};for(let d=from;d<=to;d=addDays(d,1))perDay[d]=0;sold.forEach(t=>perDay[t.date]=(perDay[t.date]||0)+t.total);
+  const withCost=ok.filter(t=>typeof t.cost==='number');
+  const brut=sum(sold.map(t=>t.total)),retours=sum(back.map(t=>t.total));
+  return {from,to,n:sold.length,brut,retours,nRetours:back.length,ca:brut-retours,panier:sold.length?Math.round(brut/sold.length):0,
+    marge:sum(withCost.map(t=>t.total-t.cost)),margeSur:sum(withCost.map(t=>t.total)),pay,
+    entrees:sum(ops.filter(o=>o.amt>0).map(o=>o.amt)),sorties:-sum(ops.filter(o=>o.amt<0).map(o=>o.amt)),net:sum(ops.map(o=>o.amt)),
+    inBy,outBy,top:Object.values(top).sort((a,b)=>b.total-a.total).slice(0,5),perDay}}
+/* the drawer: it starts from the last count (what was left in it), plus every movement since. Before the
+   very first count nothing is known about it: only the day's own movements are expected. */
+const closeOf=(s,d)=>(s.closes||[]).find(c=>c.d===d);
+function cashDay(s,d){const last=(s.closes||[]).filter(c=>c.d<d&&c.counted!=null).sort((a,b)=>b.d.localeCompare(a.d))[0];
+  const fond0=last?last.left+s.ops.filter(o=>o.d>last.d&&o.d<d).reduce((a,o)=>a+o.amt,0):0;
+  const net=s.ops.filter(o=>o.d===d).reduce((a,o)=>a+o.amt,0);
+  return {d,fond0,net,expected:fond0+net,known:!!last}}
+/* counting can be done several times a day; the last count is the one kept at midnight */
+function countCash(s,d,counted,left,by){if(!(counted>=0)||!(left>=0)||left>counted)return null;
+  if(!s.closes)s.closes=[];const c0=cashDay(s,d);let c=closeOf(s,d);
+  if(!c){c={id:'c-'+d,d,closed:false};s.closes.push(c)}
+  Object.assign(c,{fond0:c0.fond0,net:c0.net,expectedAtCount:c0.expected,counted,left,ecart:counted-c0.expected,by:by||'',at:new Date().toISOString()});
+  return c}
+/* every day before today closes on its own: those with activity get their record, counted or not */
+function autoClose(s,today){today=today||plus(0);if(!s.closes)s.closes=[];let n=0;
+  const active=new Set(s.ops.map(o=>o.d).concat(s.tickets.map(t=>t.date)).filter(d=>d&&d<today));
+  (s.closes||[]).forEach(c=>{if(c.d<today)active.add(c.d)});
+  [...active].sort().forEach(d=>{let c=closeOf(s,d);if(c&&c.closed)return;
+    const k=cashDay(s,d),r=periodReport(s,d,d);
+    if(!c){c={id:'c-'+d,d,counted:null,left:null};s.closes.push(c)}
+    Object.assign(c,{fond0:k.fond0,net:k.net,closed:true,closedAt:new Date().toISOString(),ca:r.ca,n:r.n});n++});
+  return n}
 function analyse(s){const t30=soldIn(s,30);
   const rows=s.stock.map(r=>{const q=qtyOf(s,r),s30=t30.reduce((a,t)=>a+t.lines.filter(l=>l.ref===r.id).reduce((b,l)=>b+l.qty,0),0);
     const oldest=(r.kind!=='p'?unitsOf(s,r.id):[]).reduce((a,u)=>Math.max(a,-days(u.inDate)),0);
@@ -443,11 +500,11 @@ function analyse(s){const t30=soldIn(s,30);
    Each item of S becomes one row {c: collection, k: key, d: data}. Costs travel apart
    (stock$, units$, tickets$) and buys, pays, ops are private: the server never sends them
    to a seller. Counters are not synced: they are recomputed from the data itself. */
-const SYNC_COLS=['stock','units','sups','tickets','invoices','credits','dels','sales','leads','buys','pays','ops'];
+const SYNC_COLS=['stock','units','sups','tickets','invoices','credits','dels','sales','leads','buys','pays','ops','closes'];
 const SYNC_META=['shop','info','rules','inv','lastInv'];
 const emptyShop=()=>({shop:'Ma boutique',info:{addr:'',tel:'',ice:'',ifi:'',tp:'',rc:'',tva:0,logo:'',url:APP},rules:{...RULES},
   demo:false,seq:0,sn:0,fseq:0,aseq:0,stock:[],units:[],sups:[],tickets:[],invoices:[],credits:[],dels:[],sales:[],leads:[],
-  buys:[],pays:[],ops:[],inv:null,lastInv:null});
+  buys:[],pays:[],ops:[],closes:[],inv:null,lastInv:null});
 function toRows(s,withTicketCost){const out=new Map(),put=(c,k,d)=>out.set(c+'|'+k,{c,k,d});
   const m={};SYNC_META.forEach(k=>m[k]=s[k]??null);put('meta','magasin',m);
   for(const c of SYNC_COLS)for(const x of (s[c]||[])){if(!x.id)x.id=uid();
@@ -467,6 +524,8 @@ function applyRow(s,r){
   if(r.del){if(i>=0)list.splice(i,1);return}
   const n={...r.d,id:r.k};
   if(old&&old.cost!==undefined&&n.cost===undefined)n.cost=old.cost;
+  /* a cash count is never erased by an automatic closing made on a phone that had not seen it */
+  if(base==='closes'&&old&&old.counted!=null&&n.counted==null)['counted','left','ecart','expectedAtCount','by','at'].forEach(k=>{n[k]=old[k]});
   if(base==='tickets'&&old&&Array.isArray(n.lines))n.lines.forEach((l,j)=>{const c=old.lines&&old.lines[j]&&old.lines[j].cost;if(c!==undefined&&l.cost===undefined)l.cost=c});
   if(old)replaceIn(old,n);else list.push(n)}
 /* counters only ever go up, and never below what the data already uses */
@@ -748,6 +807,7 @@ const views={
     <a href="#stock" class="${low.length?'low':''}"><b>${low.length}</b><span>article${low.length>1?'s':''} à commander</span></a>
     <a href="#fournisseurs" class="${supDue(S)?'low':''}"><b>${dh(supDue(S))}</b><span>à payer aux fournisseurs</span></a></div></section>
   <a class="btn primary wide big" href="#vente">Nouvelle vente</a>
+  ${caisseCard()}
   <h2>À faire aujourd'hui</h2>${todo||empty('Rien en retard. Tout est à jour.')}`},
  reglages(){return `${compteCard()}${isP()?`<h2>Votre magasin</h2>
   <div class="card"><div class="row"><div><div class="name">Nom et logo</div><div class="meta">Le nom et le logo s'affichent en haut de l'application, sur les tickets et sur les factures.</div></div>${S.info.logo?`<img class="logo-prev" src="${esc(S.info.logo)}" alt="Logo actuel">`:''}</div>
@@ -821,6 +881,45 @@ const views={
   <button class="btn primary wide big" data-act="scan">Scanner une étiquette</button>
   ${inS.map(u=>{const r=refOf(S,u.ref),ok=S.inv.seen[u.id];return `<div class="card ${ok?'ok':''}"><div class="row"><div><div class="name">${esc(r?r.name:'')}</div><div class="meta">${esc(u.serial)}</div></div><button class="btn${ok?' wa':''}" data-act="inv-see" data-id="${u.id}">${ok?'Vue':'Marquer vue'}</button></div></div>`}).join('')}
   <div class="acts"><button class="btn primary" data-act="inv-end">Clôturer l'inventaire</button><button class="btn link" data-act="inv-cancel">Annuler</button></div>`},
+ bord(){const [f,t,lab]=periodOf(bordP),r=periodReport(S,f,t),[pf,pt]=prevPeriod(bordP),q=periodReport(S,pf,pt),m=summary(S);
+  const tr=(a,b)=>{const v=pct(a,b);return v==null?'':`<small class="${v>=0?'up':'down'}">${v>=0?'▲ +':'▼ '}${v} % par rapport à la période précédente</small>`};
+  const days=Object.entries(r.perDay),mx=Math.max(1,...days.map(x=>x[1]));
+  const chart=bordP==='jour'?Object.entries(PAY).map(([k,l])=>`<div class="row"><span class="meta">${l}</span><b>${dh(r.pay[k]||0)}</b></div>`).join('')
+   :`<div class="chart" role="img" aria-label="Ventes par jour">${days.map(([d,v])=>`<i class="${d===plus(0)?'now':''}" style="height:${Math.round(v/mx*100)}%" title="${fdate(d)} : ${dh(v)}"></i>`).join('')}</div>
+     <div class="chart-l"><span>${fdate(f)}</span><span>${fdate(t)}</span></div>`;
+  return `<div class="subnav sorts">${Object.entries(PER).map(([k,l])=>`<button type="button" data-act="bord-p" data-id="${k}"${k===bordP?' aria-current="page"':''}>${l}</button>`).join('')}</div>
+  <h2>${cap(lab)}</h2>
+  <div class="kpis">
+   <div class="kpi"><b>${dh(r.ca)}</b><span>chiffre d’affaires${r.retours?' (retours déduits : '+dh(r.retours)+')':''}</span>${tr(r.ca,q.ca)}</div>
+   <div class="kpi"><b>${dh(r.marge)}</b><span>marge brute · ${r.margeSur?Math.round(r.marge/r.margeSur*100):0} %</span>${tr(r.marge,q.marge)}</div>
+   <div class="kpi"><b>${r.n}</b><span>vente${r.n>1?'s':''} · panier moyen ${dh(r.panier)}</span>${tr(r.n,q.n)}</div>
+   <div class="kpi"><b class="${r.net<0?'neg':''}">${dh(r.net)}</b><span>trésorerie : ${dh(r.entrees)} entrés, ${dh(r.sorties)} sortis</span></div></div>
+  <h2>${bordP==='jour'?'Ventes par mode de paiement':'Ventes jour par jour'}</h2><div class="card">${chart}</div>
+  <h2>À recevoir et à payer</h2>
+  <div class="kpis">
+   <a class="kpi" href="#credit"><b>${dh(m.owed)}</b><span>crédits à encaisser${m.lateN?' · '+dh(m.lateAmt)+' en retard':''}</span></a>
+   <a class="kpi" href="#livraisons"><b>${dh(m.cash)}</b><span>chez les livreurs</span></a>
+   <a class="kpi" href="#fournisseurs"><b class="${supDue(S)?'neg':''}">${dh(supDue(S))}</b><span>dû aux fournisseurs</span></a>
+   <a class="kpi" href="#stock"><b>${dh(stockValue(S))}</b><span>valeur du stock · ${stockLow(S).length} à commander</span></a></div>
+  <h2>Meilleures ventes</h2>${r.top.length?`<div class="card">${r.top.map(x=>`<div class="row"><span>${esc(x.model)} <span class="meta">× ${x.qty}</span></span><b>${dh(x.total)}</b></div>`).join('')}</div>`:empty('Aucune vente sur la période.')}
+  <div class="acts"><button class="btn" data-act="rapport" data-id="${f}|${t}">Rapport à imprimer ou envoyer</button></div>`},
+ clotures(){const d0=plus(0),k=cashDay(S,d0),c=closeOf(S,d0),r0=periodReport(S,d0,d0);
+  const nav=`<div class="subnav sorts">${Object.entries(CLO).map(([x,l])=>`<button type="button" data-act="clo-p" data-id="${x}"${x===cloP?' aria-current="page"':''}>${l}</button>`).join('')}</div>`;
+  const caisse=x=>x.counted!=null?`caisse comptée · écart <b class="${x.ecart?'neg':''}">${x.ecart>0?'+':''}${dh(x.ecart)}</b>`:'<span class="neg">caisse non comptée</span>';
+  if(cloP==='jours'){const l=(S.closes||[]).filter(x=>x.closed).sort((a,b)=>b.d.localeCompare(a.d)).slice(0,31);
+   return nav+`<h2>Aujourd’hui, en cours</h2><div class="card"><div class="row"><div><div class="name">${dh(r0.ca)} · ${r0.n} vente${r0.n>1?'s':''}</div>
+     <div class="meta">Caisse attendue ${dh(k.expected)}${k.known?'':' (depuis ce matin : la caisse n’a encore jamais été comptée)'} · ${c&&c.counted!=null?caisse(c)+' à '+new Date(c.at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'pas encore comptée'}</div>
+     <div class="meta">Se clôture seule à minuit.</div></div></div>
+    <div class="acts"><button class="btn primary" data-act="caisse">Compter la caisse</button><button class="btn" data-act="rapport" data-id="${d0}|${d0}">Rapport</button></div></div>
+   <h2>Journées clôturées</h2>${l.length?l.map(x=>`<div class="card"><div class="row"><div><div class="name">${cap(new Date(x.d+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'}))}</div>
+     <div class="meta">${dh(x.ca||0)} · ${x.n||0} vente${x.n>1?'s':''} · ${caisse(x)}</div></div><button class="btn" data-act="rapport" data-id="${x.d}|${x.d}">Rapport</button></div></div>`).join(''):empty('Aucune journée clôturée pour l’instant : la première se clôturera à minuit.')}`}
+  const per=cloP==='semaines'?[0,1,2,3,4,5,6,7].map(i=>{const f=addDays(weekStart(d0),-7*i);return [f,addDays(f,6)]})
+   :[0,1,2,3,4,5].map(i=>{const dt=new Date(d0+'T00:00:00');dt.setDate(1);dt.setMonth(dt.getMonth()-i);const m=iso(dt).slice(0,7);return [m+'-01',monthEnd(m)]});
+  return nav+per.map(([f,t])=>{const r=periodReport(S,f,t),cl=(S.closes||[]).filter(x=>x.d>=f&&x.d<=t&&x.closed),nc=cl.filter(x=>x.counted==null).length,ec=cl.reduce((a,x)=>a+(x.ecart||0),0);
+    const lab=cloP==='semaines'?'Semaine du '+fdate(f)+' au '+fdate(t):cap(new Date(f+'T00:00:00').toLocaleDateString('fr-FR',{month:'long',year:'numeric'}));
+    return `<div class="card ${t<d0?'':'warn'}"><div class="row"><div><div class="name">${lab}</div><div class="meta">${t<d0?'Clôturée':'En cours'} · ${dh(r.ca)} · ${r.n} vente${r.n>1?'s':''} · marge ${dh(r.marge)}</div>
+     <div class="meta">${cl.length} journée${cl.length>1?'s':''} clôturée${cl.length>1?'s':''}${nc?' · <span class="neg">'+nc+' sans comptage</span>':''}${cl.length-nc?' · écart de caisse '+(ec>0?'+':'')+dh(ec):''}</div></div>
+     <button class="btn" data-act="rapport" data-id="${f}|${t>d0?d0:t}">Rapport</button></div></div>`}).join('')},
  journal(){const ms=[...new Set(S.ops.map(o=>o.d.slice(0,7)))].sort().reverse(),mo={'':'Toute la période'};
   if(!ms.includes(jm)&&jm)ms.unshift(jm);
   ms.forEach(m=>{mo[m]=new Date(m+'-01T00:00:00').toLocaleDateString('fr-FR',{month:'long',year:'numeric'})});const j=journal(S,jm);
@@ -844,10 +943,10 @@ const views={
   <input id="search" type="search" placeholder="Chercher : nom, téléphone, n° de série" value="${esc(q)}" aria-label="Chercher une vente">
   ${bar('garantie')}<div class="list">${l.map(saleCard).join('')||empty('Aucune vente dans cette vue.')}</div>`}
 };
-const ALL=[['Accueil',['accueil','reglages']],['Vente',['vente','tickets']],['Stock',['stock','catalogue','fournisseurs','analyse','inventaire']],['Suivi',['credit','demandes','livraisons','garantie']],['Compta',['journal','factures']]];
+const ALL=[['Accueil',['accueil','reglages']],['Vente',['vente','tickets']],['Stock',['stock','catalogue','fournisseurs','analyse','inventaire']],['Suivi',['credit','demandes','livraisons','garantie']],['Compta',['bord','clotures','journal','factures']]];
 const SELLER={accueil:1,reglages:1,fournisseurs:1,catalogue:1,vente:1,tickets:1,stock:1,inventaire:1,credit:1,demandes:1,livraisons:1,garantie:1};
 const groups=()=>isP()?ALL:ALL.map(([n,ks])=>[n,ks.filter(k=>SELLER[k])]).filter(x=>x[1].length);
-const SUB={accueil:"Aujourd'hui",reglages:'Réglages',vente:'Vendre',tickets:'Tickets',stock:'Articles',catalogue:'Catalogue',fournisseurs:'Fournisseurs',analyse:'Analyse',inventaire:'Inventaire',credit:'Crédit',demandes:'Demandes',livraisons:'Envois',garantie:'Garantie',journal:'Journal',factures:'Factures'};
+const SUB={bord:'Tableau de bord',clotures:'Clôtures',accueil:"Aujourd'hui",reglages:'Réglages',vente:'Vendre',tickets:'Tickets',stock:'Articles',catalogue:'Catalogue',fournisseurs:'Fournisseurs',analyse:'Analyse',inventaire:'Inventaire',credit:'Crédit',demandes:'Demandes',livraisons:'Envois',garantie:'Garantie',journal:'Journal',factures:'Factures'};
 const tab=()=>{const h=location.hash.slice(1),ok=views[h]&&(isP()||SELLER[h]);return ok?h:'accueil'};
 function render(keepFocus){const t=tab(),G=groups(),g=G.find(x=>x[1].includes(t));
   const sub=g[1].length>1?`<div class="subnav">${g[1].map(k=>`<a href="#${k}"${k===t?' aria-current="page"':''}>${SUB[k]}</a>`).join('')}</div>`:'';
@@ -1197,7 +1296,7 @@ const acts={
    d=>{if(d.sup==='new')return newSup(nf=>acts['recv-main'](null,null,{...p,...d,sup:nf.id}));
     if(d.art==='new')return sheet('Nouvel article',artFields(p.newArt),x=>{const r=artSave(x);acts['recv-main'](null,null,{...p,...d,art:r.id})},x=>artCheck(x));
     const r=refOf(S,d.art);
-    const us=receive(S,r.id,n(d.qty),n(d.cost),sers(d.ser),isDay(d.d)?d.d:null,d.sup,d.etat==='du');
+    const us=receive(S,r.id,n(d.qty),n(d.cost),sers(d.ser),isDay(d.d)?d.d:null,d.sup,d.etat==='du',plus(0));
     if(p.bon)bonReceived(p.bon,r);
     afterRecv(r,us,false)},
    d=>d.art==='new'||d.sup==='new'?'':recvCheck(d,refOf(S,d.art)))},
@@ -1254,7 +1353,7 @@ const acts={
  repair(id){const v=find('sales',id);
   sheet('Réparation : '+esc(v.name),[{k:'what',l:'Ce qui a été réparé'},{k:'price',l:'Prix facturé (DH), 0 si sous garantie',t:'number',v:0},{k:'d',l:'Date',t:'date',v:plus(0)}],
    d=>{v.repairs.push({d:d.d,what:d.what,price:n(d.price)});op(S,'reparation','Réparation · '+d.what+' · '+v.name,n(d.price),d.d,v.ticket)},
-   d=>!d.what.trim()?'Dites ce qui a été réparé.':days(d.d)>0?'La date ne peut pas être dans le futur.':'')},
+   d=>!d.what.trim()?'Dites ce qui a été réparé.':days(d.d)>0?'La date ne peut pas être dans le futur.':isClosedDay(d.d)?'Cette journée est clôturée : la réparation se note à la date d’aujourd’hui.':'')},
  touch(id){const l=find('leads',id);l.last=plus(0);if(l.status==='nouveau')l.status='discussion';setTimeout(upd,300)},
  reseed(_,b){closeSheet();if(online())return say('Désactivé pour un magasin en ligne.');if(sure(b)){const r=S.role,pin=S.pin,lg=S.info.logo;S=seed();S.role=r;S.pin=pin;if(lg)S.info.logo=lg;upd()}},
  clear(_,b){if(online())return say('Désactivé pour un magasin en ligne.');if(sure(b)){S={shop:S.shop,info:S.info,rules:S.rules,role:'patron',pin:S.pin,pays:[],demo:false,seq:0,sn:0,fseq:0,aseq:0,ops:[],invoices:[],buys:[],sups:S.sups,credits:[],leads:[],dels:[],sales:[],stock:[],units:[],tickets:[],inv:null,lastInv:null};upd()}},
@@ -1457,7 +1556,7 @@ async function pullAll(){let got=[],page;
   /* public rows first, then the cost parts that complete them */
   rows.sort((a,b)=>a.c.endsWith('$')-b.c.endsWith('$'));
   for(const r of rows){if(dirty(r.key))continue;applyRow(S,r)}
-  repairReceptions(S);relinkUnits(S);fixCounters(S);if(canCost())fillCosts(S);
+  repairReceptions(S);relinkUnits(S);fixCounters(S);autoClose(S);if(canCost())fillCosts(S);
   const after=toRows(S,canCost());
   for(const r of rows){if(dirty(r.key))continue;const a=after.get(r.key);if(r.del||!a)delete link.h[r.key];else link.h[r.key]=hashOf(a.d)}
   return got.length}
@@ -1468,6 +1567,7 @@ function syncNow(){if(!online())return Promise.resolve();
   return syncInfo.run}
 async function syncOnce(){syncInfo.busy=true;let changed=0;const nRef=syncInfo.refused.length,wasErr=syncInfo.err;
   try{for(let round=0;round<3;round++){const sent=await pushAll(),got=await pullAll();changed+=got;if(!pending().length)break}
+    if(autoClose(S))changed++;
     syncInfo.err='';syncInfo.at=Date.now()}
   catch(e){syncInfo.err=e.net?'Hors ligne : les modifications partiront au retour du réseau.':e.message}
   finally{syncInfo.busy=false;keepLink();try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
@@ -1580,6 +1680,56 @@ async function readSheet(file){let img;
   const pr=$('#f-price');if(pr)pr.focus()}
 ['cam','img'].forEach(k=>$('#fiche-'+k).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)readSheet(f)}));
 acts.fiche=k=>{closeSheet();if(!online())return say('Connectez-vous dans Réglages, Compte en ligne, pour utiliser la lecture par IA.');$('#fiche-'+(k==='img'?'img':'cam')).click()};
+
+/* ---------- clôtures, caisse et tableau de bord ---------- */
+let bordP='mois',cloP='jours';
+const PER={jour:'Jour',semaine:'Semaine',mois:'Mois'},CLO={jours:'Journées',semaines:'Semaines',mois:'Mois'};
+const cap=t=>String(t).charAt(0).toUpperCase()+String(t).slice(1);
+const pct=(a,b)=>b?Math.round((a-b)/Math.abs(b)*100):null;
+function periodOf(kind,ref){const d=ref||plus(0);
+  if(kind==='jour')return [d,d,ref?fdate(d):'aujourd’hui'];
+  if(kind==='semaine'){const f=weekStart(d);return [f,addDays(f,6),ref?'semaine du '+fdate(f):'cette semaine']}
+  const m=d.slice(0,7);return [m+'-01',monthEnd(m),ref?m:'ce mois-ci']}
+/* the previous period, cut to the same number of days, so that a month in progress is compared fairly */
+function prevPeriod(kind){const [f]=periodOf(kind),n=Math.round((new Date(plus(0)+'T00:00:00')-new Date(f+'T00:00:00'))/DAY);
+  const pf=kind==='jour'?addDays(f,-1):kind==='semaine'?addDays(f,-7):(()=>{const x=new Date(f+'T00:00:00');x.setMonth(x.getMonth()-1);return iso(x)})();
+  const [,pt]=periodOf(kind,pf);const cut=addDays(pf,n);return [pf,cut<pt?cut:pt]}
+function caisseCard(){const d0=plus(0),c=closeOf(S,d0),done=c&&c.counted!=null,k=cashDay(S,d0);
+  const when=done?new Date(c.at).toLocaleTimeString('fr-FR',{hour:'2-digit',minute:'2-digit'}):'';
+  return `<div class="card ${done?'ok':''}"><div class="row"><div><div class="name">Caisse du jour</div>
+   <div class="meta">${done?'Comptée à '+when+(isP()?' · écart '+(c.ecart>0?'+':'')+dh(c.ecart):''):'Pas encore comptée. La journée se clôture seule à minuit.'}${isP()&&!done?' · attendue '+dh(k.expected):''}</div></div></div>
+   <div class="acts"><button class="btn${done?'':' primary'}" data-act="caisse">${done?'Recompter':'Compter la caisse'}</button></div></div>`}
+function reportHtml(f,t){const r=periodReport(S,f,t),I=S.info,one=f===t,cl=(S.closes||[]).filter(x=>x.d>=f&&x.d<=t).sort((a,b)=>a.d.localeCompare(b.d));
+  const ended=t<plus(0),k=one?cashDay(S,f):null,c=one?closeOf(S,f):null;
+  const title=(ended?'CLÔTURE ':'SITUATION ')+(one?'DU '+new Date(f+'T00:00:00').toLocaleDateString('fr-FR'):'DU '+new Date(f+'T00:00:00').toLocaleDateString('fr-FR')+' AU '+new Date(t+'T00:00:00').toLocaleDateString('fr-FR'))+(ended?'':' (EN COURS)');
+  const rows=l=>l.map(([a,b])=>`<tr><td>${a}</td><td class="r">${b}</td></tr>`).join('');
+  return `<div class="inv rep" id="paper" style="--ac:${esc(invColor())}">
+   <div class="inv-head">${I.logo?`<img class="inv-logo" src="${esc(I.logo)}" alt="">`:''}<div class="inv-shop">${esc(S.shop)}</div>${I.slogan?`<div class="inv-slogan">${esc(I.slogan)}</div>`:''}</div>
+   <div class="inv-kind">${title}</div>
+   <h3>Ventes</h3><table class="inv-grid">${rows([['Nombre de ventes',r.n],['Ventes',m2(r.brut)+' DH'],['Retours ('+r.nRetours+')','− '+m2(r.retours)+' DH'],['Chiffre d’affaires',m2(r.ca)+' DH'],['Panier moyen',m2(r.panier)+' DH'],['Marge brute',m2(r.marge)+' DH'+(r.margeSur?' ('+Math.round(r.marge/r.margeSur*100)+' %)':'')]])}</table>
+   <h3>Par mode de paiement</h3><table class="inv-grid">${rows(Object.entries(PAY).map(([x,l])=>[l,m2(r.pay[x]||0)+' DH']))}</table>
+   <h3>Argent entré et sorti</h3><table class="inv-grid">${rows(Object.entries(r.inBy).map(([x,v])=>['Entrée · '+(OPT[x]||x),m2(v)+' DH']).concat(Object.entries(r.outBy).map(([x,v])=>['Sortie · '+(OPT[x]||x),'− '+m2(v)+' DH']),[['Solde de la période',m2(r.net)+' DH']]))}</table>
+   ${one?`<h3>Caisse</h3><table class="inv-grid">${rows([['Fond de caisse au départ',k.known?m2(k.fond0)+' DH':'inconnu (jamais comptée avant)'],['Mouvements du jour',m2(k.net)+' DH'],['Caisse attendue',m2(k.expected)+' DH']].concat(c&&c.counted!=null?[['Caisse comptée',m2(c.counted)+' DH'],['Écart',(c.ecart>0?'+':'')+m2(c.ecart)+' DH'],['Laissé pour le lendemain',m2(c.left)+' DH'],['Retiré de la caisse',m2(c.counted-c.left)+' DH']]:[['Caisse comptée','non comptée']]))}</table>`
+    :`<h3>Journées</h3><table class="inv-grid"><tr><th>Jour</th><th>Chiffre d’affaires</th><th>Caisse</th></tr>${cl.map(x=>`<tr><td>${new Date(x.d+'T00:00:00').toLocaleDateString('fr-FR',{weekday:'short',day:'numeric',month:'short'})}</td><td class="r">${m2(x.ca!=null?x.ca:periodReport(S,x.d,x.d).ca)} DH</td><td>${x.counted!=null?'écart '+(x.ecart>0?'+':'')+m2(x.ecart)+' DH':'non comptée'}</td></tr>`).join('')||'<tr><td colspan="3">Aucune journée clôturée</td></tr>'}</table>`}
+   <h3>Meilleures ventes</h3><table class="inv-grid">${rows(r.top.map(x=>[esc(x.model)+' × '+x.qty,m2(x.total)+' DH']))||'<tr><td>Aucune vente</td></tr>'}</table>
+   <div class="inv-ids">Édité le ${new Date().toLocaleString('fr-FR')}${one&&c&&c.closedAt?' · clôturée automatiquement le '+new Date(c.closedAt).toLocaleString('fr-FR'):''}</div></div>`}
+Object.assign(acts,{
+ 'bord-p'(k){bordP=k;render()},
+ 'clo-p'(k){cloP=k;render()},
+ rapport(id){if(!isP())return say('Les rapports sont réservés au patron.');const [f,t]=String(id).split('|');
+  paper={name:'cloture-'+f+(t!==f?'-'+t:''),fmt:'a4'};panel(reportHtml(f,t)+printBar()+`<div class="acts">${closeBtn}</div>`)},
+ /* the seller counts without seeing what is expected: a blind count tells the truth */
+ caisse(){const d0=plus(0);
+  sheet('Compter la caisse',[{k:'counted',l:'Argent compté dans la caisse (DH)',t:'number'},{k:'left',l:'Laissé dans la caisse pour demain (DH)',t:'number',v:0}],
+   d=>{const c=countCash(S,d0,n(d.counted),n(d.left),auth?auth.user.email:(isP()?'patron':'vendeur'));
+    setTimeout(()=>isP()?say(`Caisse comptée : ${dh(c.counted)} pour ${dh(c.expectedAtCount)} attendus · <b class="${c.ecart?'neg':''}">écart ${c.ecart>0?'+':''}${dh(c.ecart)}</b>. ${dh(c.counted-c.left)} retirés, ${dh(c.left)} laissés pour demain.`):say('Comptage enregistré. Merci.'),0)},
+   d=>n(d.left)>n(d.counted)?'Le fond laissé ne peut pas dépasser l’argent compté.':'')}
+});
+/* midnight: yesterday closes. Online, the closing waits for the server's data (another phone may have counted). */
+let dayNow=plus(0);
+function closeDays(){if(autoClose(S)){save();render()}}
+setInterval(()=>{if(plus(0)!==dayNow){dayNow=plus(0);if(online())syncLater(200);else closeDays()}},60000);
+if(!online())closeDays();
 
 /* ---------- réception par photo du bon d'achat : l'IA lit, le commerçant vérifie chaque ligne ---------- */
 let lastBon=null;

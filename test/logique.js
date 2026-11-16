@@ -5,7 +5,7 @@
      node test/logique.js [nombre de parties, 200 par défaut] */
 const fs=require('fs'),path=require('path');
 const code=[...fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8').matchAll(/<script>([\s\S]*?)<\/script>/g)].map(x=>x[1]).join('\n');
-const L=new Function(code+';return {seed,sell,refund,exchange,payCredit,payBuy,receive,invoice,setDel,journal,supErr,repairReceptions,unitsOf,qtyOf,plus,INITIAL,R}')();
+const L=new Function(code+';return {seed,sell,refund,exchange,payCredit,payBuy,receive,invoice,setDel,journal,supErr,repairReceptions,unitsOf,qtyOf,plus,INITIAL,R,autoClose,cashDay,countCash,periodReport,addDays}')();
 
 let seedN=1;const rnd=()=>{seedN=(seedN*1103515245+12345)&0x7fffffff;return seedN/0x7fffffff};
 const pick=l=>l[Math.floor(rnd()*l.length)];
@@ -61,6 +61,17 @@ for(let g=0;g<N;g++){seedN=g+1;const s=L.seed();const hist=[];
       if(what==='del'){if(!s.dels.length)continue;const d=pick(s.dels);L.setDel(s,d.id,pick(['expedie','livre','encaisse','retour']));hist.push('livraison')}
       ops++;check(s,hist.slice(-4).join(' → '));
     }catch(e){note('erreur : '+e.message,hist.slice(-4).join(' → '))}}
+  /* closings: every past day with activity is closed once, never today; a count is kept; the report adds up */
+  const today=L.plus(0),n1=L.autoClose(s,today),n2=L.autoClose(s,today);
+  if(n2!==0)note('une journée clôturée deux fois','clôture');
+  if((s.closes||[]).some(c=>c.closed&&c.d>=today))note('aujourd’hui clôturé avant minuit','clôture');
+  const k=L.cashDay(s,today),c=L.countCash(s,today,Math.max(0,k.expected)+100,50,'test');
+  if(!c||c.ecart!==Math.max(0,k.expected)+100-k.expected)note('écart de caisse faux','comptage');
+  L.autoClose(s,L.addDays(today,1));const k2=L.cashDay(s,L.addDays(today,1));
+  if(k2.fond0!==50)note('le lendemain ne part pas de ce qui a été laissé en caisse','comptage');
+  const ds=s.ops.map(o=>o.d).concat(s.tickets.map(t=>t.date)).sort(),r=L.periodReport(s,ds[0],L.addDays(today,1)),sumOps=s.ops.reduce((a,o)=>a+o.amt,0);
+  if(r.net!==sumOps)note('le rapport ne retombe pas sur le journal','rapport');
+  if(r.ca!==r.brut-r.retours)note('chiffre d’affaires mal calculé','rapport');
   /* the journal must balance with what the shop says came in and went out */
   const j=L.journal(s);if(j.net!==j.inn-j.out)note('journal déséquilibré','fin de partie');
 }

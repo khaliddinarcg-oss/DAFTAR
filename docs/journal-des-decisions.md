@@ -35,6 +35,10 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
 | Trottinettes, vélos, scooters et motos électriques (16 nov. 2026) | Le même commerçant vend souvent les quatre. Tout ce qui n'est pas une pièce est un véhicule, suivi par numéro de série ; aucune logique ne dépend du type de véhicule |
 | Facture sur le modèle du bon d'un revendeur de Tanger (Electro Bike) | C'est ce que les clients connaissent : en-tête au logo, cadre client, tableau quadrillé, total surligné, pied de page aux coordonnées. Les mentions légales marocaines qu'il n'avait pas sont gardées : ICE, IF, RC, patente, montant en lettres, TVA |
 | Une facture garde la TVA de son émission | Changer le taux dans les réglages ne modifie jamais une facture déjà faite |
+| Clôture automatique de chaque journée à minuit (16 nov. 2026) | Demandé par le patron : personne n'oublie de clôturer. Le verrou se déduit de la date du jour, rien à stocker |
+| Comptage de caisse à l'aveugle pour le vendeur | Il tape ce qu'il compte sans voir ce qui est attendu : l'écart dit la vérité |
+| La caisse attendue part du dernier comptage | Personne ne connaît le contenu du tiroir avant le premier comptage ; additionner tout l'historique donnait −12 650 DH dans le magasin d'exemple |
+| Le tableau de bord compare à la période précédente coupée à la même durée | Un mois en cours n'est pas comparé à un mois entier |
 
 ## Erreurs commises, pour ne pas les refaire
 
