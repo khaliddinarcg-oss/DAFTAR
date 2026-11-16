@@ -138,6 +138,7 @@ dans Réglages le recharge.
 | `docs/feuille-de-route.md` | Ce qui est fait, où on en est, ce qui reste, dans l'ordre |
 | `docs/base-de-donnees.md` | La base Supabase : tables, rôles, règles appliquées par le serveur |
 | `tools/etiquettes.py` | Génère une feuille d'étiquettes QR à imprimer |
+| `tools/qr-test.py` | Génère la feuille de QR de test, vente et création d'article (`docs/acces/qr-de-test.pdf`) |
 | `tools/acces.py` | Génère le QR et l'affiche A4 qui ouvrent l'application (`docs/acces/`) |
 
 ## Comment travailler sur ce projet
