@@ -122,7 +122,9 @@ magasin, avec le jeton de la personne connectée. La fonction :
    imposé, repli automatique sur un autre modèle en cas de refus). Ce qui est
    lu sur la photo est la source ; une caractéristique absente peut être
    déduite du modèle quand il est identifié sans ambiguïté, et elle est alors
-   marquée « déduit du modèle » dans l'application ;
+   marquée « déduit du modèle » dans l'application. Une marque ou un modèle
+   reconnu seulement à l'apparence (forme, logo, sans nom écrit) est toujours
+   marqué « à vérifier », et le modèle reste vide si plusieurs se ressemblent ;
 4. note chaque analyse dans la table `analyses` (modèle, jetons, erreur),
    lisible par le patron et le comptable.
 

@@ -117,6 +117,9 @@ Règles :
   donne la valeur et mets le nom du champ dans deduit. Si tu hésites entre deux versions du
   modèle (Pro, Max, Plus, année…), ou si tu ne connais pas le modèle, laisse "" : une case vide
   vaut mieux qu'une valeur fausse. Ne déduis jamais ref ni war.
+- Marque et modèle reconnus seulement à l'apparence du produit (forme, couleurs, logo sans le nom
+  du modèle écrit) : mets brand et name dans incertain, et dis-le dans la remarque (« reconnu à
+  l'apparence, pas lu »). Si plusieurs modèles ou générations se ressemblent, laisse name vide.
 - kind : "t" pour une trottinette, "p" pour une pièce ou un accessoire.
 - brand : la marque (Xiaomi, Segway-Ninebot, Kukirin, Kugoo, Dualtron…). name : le modèle seul,
   sans la marque (« 4 Lite », « Max G2 », « G2 Master »). ref : la référence ou le code produit s'il
