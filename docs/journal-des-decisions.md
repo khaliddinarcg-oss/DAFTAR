@@ -31,6 +31,7 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
 | Fournisseur facultatif à la création de l'article, obligatoire à la réception (16 nov. 2026) | La fiche décrit le produit et sera partagée ; le fournisseur compte dès que de l'argent et du stock sont en jeu (dette, relevé, retour, garantie). Le stock de départ a son propre choix, sinon un commerçant ne pourrait jamais saisir ce qu'il a déjà |
 | Article par photo de la fiche avant la recherche par nom | L'IA lit ce qui est écrit au lieu de deviner ; le commerçant vérifie toujours. Opus 5.5 en effort faible : environ 0,2 DH la fiche, mesuré |
 | La lecture par IA passe par une fonction du serveur | La clé de l'IA ne doit jamais être dans l'application ; le serveur vérifie aussi l'appartenance au magasin et plafonne à 60 analyses par jour |
+| Garantie choisie dans une liste fermée, jamais tapée (16 nov. 2026) | Moins d'erreurs de saisie. La liste couvre de 1 à 36 mois : une garantie d'un mois (bon Electro Bike) devenait 12 mois en silence avec l'ancienne liste |
 
 ## Erreurs commises, pour ne pas les refaire
 

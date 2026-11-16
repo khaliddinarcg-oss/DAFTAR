@@ -28,6 +28,7 @@ sans tout retaper.
 | Article en double | Même marque, même modèle, même type |
 | Date de réception | Une date dans le futur |
 | Bon d'achat relu | Réceptionner deux fois la même ligne d'un même bon |
+| Garantie | Une durée hors de la liste : sans garantie, 1, 2, 3, 6, 12, 18, 24 ou 36 mois. Une durée lue ailleurs (fiche, bon d'achat) prend le choix le plus long qui ne promet pas davantage, et la fiche signale les mois que le fournisseur ne couvre pas |
 | Réception sans fournisseur | Toute réception sans fournisseur choisi (vérifié aussi par le serveur) |
 | Stock de départ | « Stock déjà en magasin (avant Daftar) » après une première réception chez un fournisseur |
 | Supprimer un article | S'il reste du stock, ou un achat impayé |

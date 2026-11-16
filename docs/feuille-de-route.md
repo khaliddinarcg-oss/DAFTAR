@@ -184,6 +184,11 @@ Fait : l'article par photo (étape A). Reste, dans l'ordre :
   validée par un magasin sert à tous ; chercher dans la bibliothèque avant
   d'appeler l'IA.
 - **D. Code-barres** du carton.
+- **Compléter la fiche** : remplir les cases vides d'un article existant, dans
+  l'ordre autre photo, bibliothèque, recherche web, déduction ; on ne remplit
+  que les cases vides, le commerçant choisit case par case, chaque valeur
+  garde sa source. Plus l'énergie de la batterie, calculée (V × Ah). Reporté
+  à plus tard, à la demande du 16 novembre.
 - **E. Plusieurs photos pour un article** : couverture et page des
   caractéristiques lues ensemble.
 

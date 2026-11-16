@@ -598,13 +598,17 @@ const DEL={expedie:'Expédié',livre:'Livré, argent chez le livreur',encaisse:'
 const DELK={expedie:'',livre:'warn',encaisse:'ok',retour:'bad'};
 const KIND={t:'Trottinette',p:'Pièce ou accessoire'};
 const SPEC={moteur:'Moteur',batterie:'Batterie',autonomie:'Autonomie',vitesse:'Vitesse maxi',roues:'Roues',poids:'Poids',charge:'Charge maxi'};
-const WAR={0:'Sans garantie',3:'3 mois',6:'6 mois',12:'12 mois',24:'24 mois'};
+/* warranty is always chosen from this list, never typed: fewer mistakes */
+const WAR={0:'Sans garantie',1:'1 mois',2:'2 mois',3:'3 mois',6:'6 mois',12:'12 mois',18:'18 mois',24:'24 mois',36:'36 mois'};
+/* a warranty read elsewhere becomes the longest choice that does not promise more */
+const warSnap=m=>Object.keys(WAR).map(Number).filter(k=>k<=Math.max(0,Number(m)||0)).pop()??0;
+const warLabel=m=>WAR[m]||m+' mois';
 const artOpts=()=>{const o={};S.stock.forEach(r=>o[r.id]=full(r)+' · '+dh(r.price));o.new='+ Nouvel article';return o};
 function artFields(r){const b=r||{spec:{}};
   return [{k:'brand',l:'Marque',v:b.brand||'',opt:1},{k:'name',l:'Modèle',v:b.name||''},{k:'ref',l:'Référence interne',v:b.ref||'',opt:1},
    {k:'kind',l:'Type',o:KIND,v:b.kind||'t'},{k:'price',l:'Prix de vente (DH)',t:'number',v:b.price||''},
    {k:'cost',l:"Prix d'achat habituel (DH)",t:'number',v:b.cost||'',opt:1},{k:'min',l:"M'alerter quand il en reste",t:'number',v:b.min??1},
-   {k:'war',l:'Garantie accordée au client',o:WAR,v:String(b.war??12)},
+   {k:'war',l:'Garantie accordée au client',o:WAR,v:String(warSnap(b.war??12))},
    {k:'sup',l:'Fournisseur habituel (facultatif)',o:habSupOpts(),v:b.sup||''}]
    .filter(f=>f.k!=='cost'||isP())
    .concat(Object.entries(SPEC).map(([k,l])=>({k,l,v:(b.spec||{})[k]||'',opt:1})))}
@@ -938,7 +942,9 @@ function showArt(id,t){const r=refOf(S,id);if(!r)return say('Article introuvable
     <div class="acts"><span class="amt qty">${qtyOf(S,r)}</span><button class="btn" type="button" data-act="pic" data-id="${id}">${r.img?'Changer la photo':'Ajouter la photo'}</button>${isP()?`<button class="btn" type="button" data-act="edit-art" data-id="${id}">Modifier</button>`:''}</div></div>
    <div class="card"><div class="row"><span class="meta">Marque</span><b>${esc(r.brand||'—')}</b></div>
     <div class="row"><span class="meta">Modèle</span><b>${esc(r.name)}</b></div>
-    <div class="row"><span class="meta">Garantie</span><b>${WAR[r.war]||r.war+' mois'}</b></div>
+    <div class="row"><span class="meta">Garantie au client</span><b>${warLabel(r.war)}</b></div>
+    ${(()=>{const g=isP()&&S.buys.filter(b=>b.ref===r.id&&b.garFour).pop();
+      return g?`<div class="row"><span class="meta">Garantie du fournisseur</span><b>${warLabel(g.garFour)}${r.war>g.garFour?` <span class="neg">· ${r.war-g.garFour} mois à votre charge</span>`:''}</b></div>`:''})()}
     <div class="row"><span class="meta">Fournisseur habituel</span><b>${r.sup&&supName(S,r.sup)?esc(supName(S,r.sup)):'<span class="neg">à renseigner</span>'}</b></div>
     ${r.src&&r.src.type==='ia'?`<div class="row"><span class="meta">Fiche</span><b>lue par l’IA le ${fdate(r.src.d)}${r.src.deduit?', en partie déduite du modèle':''}, vérifiée</b></div>`:''}
     <div class="row"><span class="meta">Seuil d'alerte</span><b>${r.min}</b></div>
@@ -1028,7 +1034,7 @@ function addCart(refId,unitId){const r=refOf(S,refId);if(!r)return say('Article 
 function checkout(){if(!cart.length)return say('Le panier est vide.');
   const total=cartTotal(),scoot=cart.some(c=>c.unit);
   const f=[{k:'name',l:'Nom du client',opt:1},{k:'phone',l:'Téléphone (WhatsApp)',t:'tel',opt:1},{k:'pay',l:'Paiement',o:PAY,v:'comptant'}];
-  if(scoot)f.push({k:'months',l:'Garantie',o:WAR,v:String(refOf(S,cart.find(c=>c.unit).ref).war??12)});
+  if(scoot)f.push({k:'months',l:'Garantie',o:WAR,v:String(warSnap(refOf(S,cart.find(c=>c.unit).ref).war??12))});
   sheet('Encaisser '+dh(total),f,d=>{
     const base={lines:cart.map(c=>({ref:c.ref,unit:c.unit,qty:c.qty,price:c.price})),name:d.name.trim(),phone:d.phone.trim(),pay:d.pay,months:Number(d.months||0)};
     const done=x=>{const t=sell(S,{...base,...x});if(t){cart=[];S.demo=false;showTicket(t.no)}else say('Un article du panier n’est plus en stock.')};
@@ -1512,10 +1518,11 @@ async function readSheet(file){let img;
   const same=S.stock.find(x=>x.kind===f.kind&&full(x).toLowerCase()===((f.brand+' '+f.name).trim()).toLowerCase());
   if(same)return panel(`<h2>Déjà dans votre stock</h2><p>${esc(full(same))} existe déjà.</p><div class="acts"><button class="btn primary" type="button" data-act="art" data-id="${same.id}">Ouvrir sa fiche</button>${closeBtn}</div>`);
   const spec={};Object.keys(SPEC).forEach(k=>{if(f[k])spec[k]=f[k]});
-  const b={brand:f.brand,name:f.name,ref:f.ref,kind:f.kind,spec,war:f.war!=null&&WAR[f.war]!==undefined?f.war:12,sup:''};
+  const b={brand:f.brand,name:f.name,ref:f.ref,kind:f.kind,spec,war:f.war!=null?warSnap(f.war):12,sup:''};
   /* read on the photo, or inferred from the model: the shopkeeper must see which is which */
   const guess=new Set((f.deduit||[]).filter(k=>f[k])),doubt=new Set((f.incertain||[]).filter(k=>!guess.has(k)));
   if(!f.brand)doubt.add('brand');
+  if(f.war!=null&&warSnap(f.war)!==f.war)doubt.add('war');
   const pic=cutOut(img,f.photo),src=jpeg(img,700,.6),n=guess.size+doubt.size;
   sheet('Vérifiez la fiche lue par l’IA',artFields(b).map(x=>guess.has(x.k)?{...x,l:x.l+' · déduit du modèle, à vérifier'}:doubt.has(x.k)?{...x,l:x.l+' · à vérifier'}:x),
    d=>{const r=artSave(d);r.img=pic;r.src={type:'ia',d:plus(0),img:src,...(guess.size?{deduit:[...guess]}:{})};showArt(r.id)},d=>artCheck(d));
@@ -1576,7 +1583,7 @@ Object.assign(acts,{
     etat:b.paiement==='du'?'du':'paye',d:b.d||plus(0),bon:{no:b.numero,garantie:b.garantie_mois||0,i:Number(i)}};
   if(refOf(S,l.art))return acts['recv-main'](null,null,{...pre,art:l.art});
   /* a new article: its card first (the sale price is the shopkeeper's), then the reception, already filled */
-  sheet('Nouvel article · '+esc(l.designation),artFields({brand:l.marque,name:l.modele,kind:l.kind,war:12,cost:l.prix_unitaire||'',sup:b.supId,spec:{}}),
+  sheet('Nouvel article · '+esc(l.designation),artFields({brand:l.marque,name:l.modele,kind:l.kind,war:b.garantie_mois?warSnap(b.garantie_mois):12,cost:l.prix_unitaire||'',sup:b.supId,spec:{}}),
    x=>{const r=artSave(x);l.art=r.id;acts['recv-main'](null,null,{...pre,art:r.id})},x=>artCheck(x));
   $('#form h2').insertAdjacentHTML('afterend','<p class="meta">Lu sur le bon : '+esc(l.designation)+'. Ajoutez le prix de vente ; la réception suit.</p>');
   const pr=$('#f-price');if(pr)pr.focus()}
