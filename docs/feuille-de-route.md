@@ -5,10 +5,11 @@ Où on en est, d'où on vient, où on va. Mise à jour à chaque étape terminé
 ```
  FAIT                          EN COURS              À VENIR
  ─────────────────────────────┬─────────────────────┬──────────────────────────────────────
- Application de démonstration │ 1. Serveur          │ 2. Bibliothèque produits + OCR
- Base de données (fondation)  │    et comptes :     │ 3. Devis → vente → facture → avoir
- Comptes et synchronisation   │    essai terrain    │
-                              │                     │ 4. Fiche client
+ Application de démonstration │ 1. Serveur et       │ 2. suite : recherche par nom,
+ Base de données (fondation)  │    comptes : essai  │    bibliothèque partagée,
+ Comptes et synchronisation   │    terrain          │    code-barres
+ 2A. Article par photo (IA)   │                     │ 3. Devis → vente → facture → avoir
+ Fournisseur obligatoire      │                     │ 4. Fiche client
                               │                     │ 5. Impression thermique
                               │                     │ 6. Envois WhatsApp automatiques
                               │                     │ 7. Multi-magasin
@@ -74,6 +75,44 @@ téléphone perdu dont tout revient sur un autre.
 **Jamais essayé sur un vrai téléphone.** À faire avant de confier
 l'application à un magasin.
 
+### Nouvel article par photo, lu par l'IA — 16 novembre 2026
+
+Stock, « Nouvel article », « Prendre en photo » (ou « Choisir une image ») :
+
+1. L'IA lit la fiche technique, le carton ou la page du catalogue (5 à
+   15 secondes) : marque, modèle, référence, type, garantie et les sept
+   caractéristiques, aux formats de l'application.
+2. La photo du produit est découpée automatiquement dans l'image quand elle y
+   figure.
+3. Le commerçant vérifie : les champs dont l'IA n'est pas sûre portent
+   « à vérifier ». Il ajoute le prix de vente et enregistre. Rien n'entre sans
+   lui.
+4. La photo de la fiche d'origine est gardée avec l'article (« Fiche lue par
+   l'IA le…, vérifiée »).
+
+Fonction serveur `analyser-fiche` (Supabase) : modèle Claude Opus 5.5, effort
+faible, réponse structurée. Environ 0,2 DH par fiche, mesuré. Plafond de
+60 analyses par magasin et par jour. Clé de l'IA dans les secrets Supabase,
+jamais dans l'application. Réservé aux comptes en ligne.
+
+Vérifié par `test/fiche.js` contre la vraie IA et la vraie base : 18 contrôles.
+
+### Le fournisseur obligatoire à la réception — 16 novembre 2026
+
+- Un article peut être créé sans fournisseur ; il porte un **fournisseur
+  habituel** facultatif, affiché « à renseigner » tant qu'il manque.
+- **Rien n'entre en stock sans fournisseur** : la réception le demande, le
+  serveur le vérifie.
+- Exception : « **Stock déjà en magasin (avant Daftar)** », pour le stock de
+  départ, proposé seulement tant que l'article n'a jamais été reçu d'un
+  fournisseur. Il n'écrit rien au journal : cet argent a été dépensé avant.
+
+Au passage, un défaut ancien a été trouvé et corrigé : les formulaires de
+réception rangeaient le fournisseur à la place de la date, et ignoraient
+« À payer plus tard ». Les réceptions abîmées sont réparées au chargement :
+le fournisseur est remis à sa place, la date, perdue, devient celle du jour
+de la réparation et s'affiche « date inconnue ».
+
 ## Où on en est
 
 ### 1. Serveur et comptes — presque fini
@@ -109,21 +148,17 @@ est la plus simple pour des démonstrations.
 
 ## Où on va
 
-### 2. La bibliothèque produits et l'OCR
+### 2. La bibliothèque produits — suite
 
-Le point de départ de toute donnée correcte.
+Fait : l'article par photo (étape A). Reste, dans l'ordre :
 
-- Photographier la fiche technique : l'IA remplit les champs (marque, modèle,
-  moteur, batterie, autonomie, vitesse, poids, garantie). L'utilisateur
-  corrige et valide ; rien n'entre sans lui.
-- Ou taper une référence : l'IA cherche la fiche chez le fabricant.
-- Photo du produit prise en boutique. La photo de la fiche source est gardée
-  avec l'article.
-- Une fiche validée par un magasin sert à tous les autres.
-
-Coût estimé : moins d'un centime de dirham par fiche avec un modèle économique,
-quelques dizaines de centimes avec le plus précis. Demande le serveur, qui
-garde la clé de l'IA.
+- **B. Recherche par nom** : taper « Kukirin G2 Master », l'IA cherche la
+  fiche chez le fabricant. Moins fiable que la photo : la source est affichée
+  et la vérification reste obligatoire.
+- **C. Bibliothèque partagée** : brancher la table `catalogue`. Une fiche
+  validée par un magasin sert à tous ; chercher dans la bibliothèque avant
+  d'appeler l'IA.
+- **D. Code-barres** du carton.
 
 ### 3. Le devis
 

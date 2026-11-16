@@ -88,6 +88,9 @@ une ligne : `magasin_id`, `collection`, `cle` (l'identifiant de l'élément),
   Réglages.
 - **Factures** : une ligne de facture ou d'avoir ne se modifie pas et ne se
   supprime pas, même par le patron.
+- **Réceptions** : une réception (`buys`) datée à partir du 16 novembre 2026
+  porte un fournisseur, ou la marque « stock de départ » (`initial`). Les
+  anciennes et les réparées (`dateIncertaine`) sont acceptées.
 - **Suppressions** : un élément se marque supprimé, il ne disparaît pas de la
   base. Seul le patron supprime un article ou un fournisseur.
 
@@ -97,6 +100,24 @@ patron.
 
 Les 21 tables de la fondation restent la cible de l'étape « enregistrement
 côté serveur » : elles sont prêtes et vides.
+
+## La lecture de fiche par l'IA
+
+Fonction `analyser-fiche` (Edge Function, code dans
+`supabase/functions/analyser-fiche/`). L'application lui envoie la photo et le
+magasin, avec le jeton de la personne connectée. La fonction :
+
+1. vérifie que la personne est patron ou vendeur de ce magasin ;
+2. refuse au-delà de 60 analyses par magasin sur 24 heures ;
+3. demande la fiche à Claude Opus 5.5 (effort faible, réponse au format JSON
+   imposé, repli automatique sur un autre modèle en cas de refus) ;
+4. note chaque analyse dans la table `analyses` (modèle, jetons, erreur),
+   lisible par le patron et le comptable.
+
+La clé de l'IA est le secret `ANTHROPIC_API_KEY` du projet, déposé par le
+propriétaire du compte. Elle n'apparaît ni dans le code ni dans l'application.
+Mesuré le 16 novembre : environ 3 200 jetons en entrée et 200 en sortie par
+fiche, soit environ 0,02 $.
 
 ## Les rôles
 

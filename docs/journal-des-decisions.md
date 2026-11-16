@@ -28,6 +28,9 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
 | Sans compte, l'application marche comme avant | Les démonstrations en boutique se font sans inscription ; le compte s'ajoute quand le commerçant veut garder ses données |
 | Le coût d'une vente du vendeur est calculé chez le patron | Le téléphone du vendeur ne connaît pas les prix d'achat et ne doit pas les connaître |
 | Le vendeur est ajouté par son adresse e-mail, après avoir créé son compte | Pas d'e-mail d'invitation à envoyer : l'offre gratuite de Supabase en envoie très peu |
+| Fournisseur facultatif à la création de l'article, obligatoire à la réception (16 nov. 2026) | La fiche décrit le produit et sera partagée ; le fournisseur compte dès que de l'argent et du stock sont en jeu (dette, relevé, retour, garantie). Le stock de départ a son propre choix, sinon un commerçant ne pourrait jamais saisir ce qu'il a déjà |
+| Article par photo de la fiche avant la recherche par nom | L'IA lit ce qui est écrit au lieu de deviner ; le commerçant vérifie toujours. Opus 5.5 en effort faible : environ 0,2 DH la fiche, mesuré |
+| La lecture par IA passe par une fonction du serveur | La clé de l'IA ne doit jamais être dans l'application ; le serveur vérifie aussi l'appartenance au magasin et plafonne à 60 analyses par jour |
 
 ## Erreurs commises, pour ne pas les refaire
 
@@ -54,3 +57,12 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
 - **Un vendeur ne peut pas « écraser » une ligne qu'il n'a pas le droit de
   lire**, même neuve : la base refuse l'envoi avec remplacement. Il fait un
   envoi simple, et un doublon compte comme déjà reçu.
+- **Les formulaires de réception appelaient `receive()` sans la date**, depuis
+  le début : l'identifiant du fournisseur était rangé dans la date, le
+  fournisseur restait vide, « À payer plus tard » était ignoré, et ces achats
+  disparaissaient du journal du mois. Invisible avec les données d'exemple,
+  qui passent par un autre chemin. Trouvé par `test/fiche.js`. Corrigé, et
+  `repairReceptions` répare les données déjà enregistrées.
+- **Une ligne refusée par le serveur et jamais envoyée était effacée du
+  téléphone.** Elle reste maintenant sur le téléphone, avec le message de
+  refus dans Réglages.

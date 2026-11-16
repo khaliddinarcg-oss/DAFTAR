@@ -16,7 +16,9 @@ interface. Pas d'étape de compilation, pas de dépendances à installer.
 | `manifest.webmanifest`, `sw.js`, `img/` | Installation sur l'écran d'accueil et fonctionnement hors connexion |
 | `test/smoke.js` | Test de bout en bout dans un vrai navigateur |
 | `test/sync.js` | Test de la synchronisation : trois téléphones simulés contre la vraie base |
+| `test/fiche.js` | Test de l'article par photo : vraie IA, vraie base (environ 0,2 DH par passage) |
 | `supabase/migrations/` | Schéma de la base Supabase, une migration par étape |
+| `supabase/functions/analyser-fiche/` | Fonction serveur qui lit une fiche produit avec l'IA |
 | `README.md` | Mise en ligne, APK, reprise du code |
 
 Hébergé sur GitHub Pages : <https://khaliddinarcg-oss.github.io/DAFTAR/>.
@@ -46,6 +48,9 @@ une base de données.
   supprime pas : un retour produit un avoir.
 - **Un achat à crédit n'écrit rien au journal** le jour de la réception. La
   sortie d'argent s'inscrit le jour du paiement au fournisseur.
+- **Rien n'entre en stock sans fournisseur** : chaque réception en choisit un,
+  ou « Stock déjà en magasin » tant que l'article n'a jamais été reçu d'un
+  fournisseur (`supErr`). Le serveur le vérifie aussi.
 - **`resolveCode`** reconnaît une étiquette par identifiant, référence, nom ou
   numéro de série, et accepte aussi bien `DAFTAR:A:<id>|<nom>` qu'une adresse
   `https://…#qr-<id>`. Elle est appelée par `handleCode` : ne pas la perdre lors
@@ -71,7 +76,8 @@ Voir `docs/feuille-de-route.md`, tenue à jour. En bref :
 1. Serveur et comptes — presque fini : comptes, équipe et synchronisation
    marchent ; reste l'essai sur vrais téléphones et l'enregistrement côté
    serveur.
-2. Bibliothèque produits et création d'article par OCR.
+2. Bibliothèque produits — l'article par photo lu par l'IA est fait ;
+   restent la recherche par nom, la bibliothèque partagée, le code-barres.
 3. Devis → vente → facture → avoir.
 4. Fiche client.
 5. Impression thermique, envois WhatsApp, multi-magasin, fournisseurs.

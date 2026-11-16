@@ -26,6 +26,8 @@ sans tout retaper.
 | Série et quantité | Plus de numéros que d'unités reçues |
 | Taille d'une réception | Plus de 50 unités d'un coup |
 | Article en double | Même marque, même modèle, même type |
+| Réception sans fournisseur | Toute réception sans fournisseur choisi (vérifié aussi par le serveur) |
+| Stock de départ | « Stock déjà en magasin (avant Daftar) » après une première réception chez un fournisseur |
 | Supprimer un article | S'il reste du stock, ou un achat impayé |
 | Supprimer un fournisseur | Tant qu'on lui doit de l'argent |
 | Clôturer un inventaire | Si rien n'a été pointé |
@@ -68,3 +70,4 @@ prix d'achat, les achats ni le journal (voir `docs/base-de-donnees.md`).
 | Dernier patron | Retirer ou rétrograder le dernier patron d'un magasin |
 | Équipe | Ajouter quelqu'un qui n'a pas encore créé son compte |
 | Magasin en ligne | « Remettre les exemples » et « Tout vider », qui effaceraient chez toute l'équipe |
+| Lecture par IA | Plus de 60 analyses de fiche par magasin et par jour ; un compte qui n'est ni patron ni vendeur du magasin |
