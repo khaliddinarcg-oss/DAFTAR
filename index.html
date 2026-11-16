@@ -869,19 +869,39 @@ const closeBtn='<button class="btn" type="button" data-act="close">Fermer</butto
 let paper=null;
 /* the frame cannot print, so a page is saved as an image or a PDF and printed or sent from the phone */
 const printBar=()=>SOLO
-  ?`<div class="acts"><button class="btn primary" type="button" data-act="print">Imprimer</button><button class="btn" type="button" data-act="pdf">PDF</button><button class="btn" type="button" data-act="png">Image</button></div>`
+  ?`<div class="acts"><button class="btn primary" type="button" data-act="share-pdf">Envoyer le PDF</button><button class="btn" type="button" data-act="print">Imprimer</button><button class="btn" type="button" data-act="pdf">PDF</button><button class="btn" type="button" data-act="png">Image</button></div>`
   :(DL?`<div class="acts"><button class="btn primary" type="button" data-act="pdf">Imprimer</button><button class="btn" type="button" data-act="png">Image pour WhatsApp</button></div><p class="meta">Imprimer ouvre le document dans le t\u00e9l\u00e9phone : choisissez Imprimer, ou Partager vers l'imprimante. L'image sert \u00e0 l'envoyer en photo sur WhatsApp.</p>`:'');
+/* An A4 page is drawn off screen at the width of a real page (794 px = 210 mm at 96 dpi), whatever
+   the phone's width: otherwise the PDF of a phone screen is a narrow strip in the middle of the page. */
+const A4PX=794;
 async function shoot(){const node=$('#paper');
   if(!node)return null;
-  if(!window.html2canvas){say("L'outil d'impression n'a pas pu se charger. V\u00e9rifiez la connexion et rechargez la page.");return null}
-  try{return await html2canvas(node,{scale:3,backgroundColor:'#ffffff',logging:false})}catch(e){say("La page n'a pas pu \u00eatre transform\u00e9e en image.");return null}}
+  if(!window.html2canvas){say("L'outil d'impression n'a pas pu se charger. Vérifiez la connexion et rechargez la page.");return null}
+  const a4=paper&&paper.fmt==='a4';let box=null,target=node;
+  if(a4){box=document.createElement('div');box.style.cssText='position:fixed;left:-20000px;top:0;width:'+A4PX+'px;background:#fff';
+    target=node.cloneNode(true);box.appendChild(target);document.body.appendChild(box)}
+  try{return await html2canvas(target,{scale:a4?2:3,backgroundColor:'#ffffff',logging:false,...(a4?{windowWidth:A4PX}:{})})}
+  catch(e){say("La page n'a pas pu être transformée en image.");return null}
+  finally{if(box)box.remove()}}
 async function savePng(){const c=await shoot();if(!c)return;
-  c.toBlob(b=>{if(b)saveFile((paper&&paper.name||'document')+'.png',b,"Image enregistr\u00e9e. Joignez-la dans WhatsApp depuis la galerie.");else say("L'image n'a pas pu \u00eatre cr\u00e9\u00e9e.")},'image/png')}
-async function savePdf(){if(!window.jspdf)return say("L'outil PDF n'a pas pu se charger. V\u00e9rifiez la connexion et rechargez la page.");
-  const c=await shoot();if(!c)return;const img=c.toDataURL('image/png');const r=c.height/c.width;let doc;
-  if(paper&&paper.fmt==='receipt'){const w=80,hh=Math.max(40,Math.round(w*r));doc=new jspdf.jsPDF({unit:'mm',format:[w,hh]});doc.addImage(img,'PNG',0,0,w,hh)}
-  else{doc=new jspdf.jsPDF({unit:'mm',format:'a4'});let iw=190,ih=190*r;if(ih>277){ih=277;iw=277/r}doc.addImage(img,'PNG',(210-iw)/2,10,iw,ih)}
-  saveFile((paper&&paper.name||'document')+'.pdf',doc.output('blob'),"Document pr\u00eat. Ouvrez-le depuis le t\u00e9l\u00e9phone, puis choisissez Imprimer ou Partager.")}
+  c.toBlob(b=>{if(b)saveFile((paper&&paper.name||'document')+'.png',b,"Image enregistrée. Joignez-la dans WhatsApp depuis la galerie.");else say("L'image n'a pas pu être créée.")},'image/png')}
+/* A4 : 10 mm margins, 190 mm wide; a longer document continues on the next page instead of shrinking */
+async function makePdf(){if(!window.jspdf){say("L'outil PDF n'a pas pu se charger. Vérifiez la connexion et rechargez la page.");return null}
+  const c=await shoot();if(!c)return null;const r=c.height/c.width;let doc;
+  if(paper&&paper.fmt==='receipt'){const w=80,hh=Math.max(40,Math.round(w*r));doc=new jspdf.jsPDF({unit:'mm',format:[w,hh]});doc.addImage(c.toDataURL('image/png'),'PNG',0,0,w,hh)}
+  else{doc=new jspdf.jsPDF({unit:'mm',format:'a4'});const W=190,H=277,pxmm=c.width/W,step=Math.floor(H*pxmm);
+    for(let y=0,pg=0;y<c.height;y+=step,pg++){const h=Math.min(step,c.height-y),part=document.createElement('canvas');part.width=c.width;part.height=h;
+      part.getContext('2d').drawImage(c,0,y,c.width,h,0,0,c.width,h);if(pg)doc.addPage();
+      doc.addImage(part.toDataURL('image/jpeg',.92),'JPEG',10,10,W,h/pxmm)}}
+  return {blob:doc.output('blob'),name:(paper&&paper.name||'document')+'.pdf'}}
+async function savePdf(){const p=await makePdf();if(!p)return;
+  saveFile(p.name,p.blob,"Document prêt. Ouvrez-le depuis le téléphone, puis choisissez Imprimer ou Partager.")}
+/* the phone's own share menu: WhatsApp receives the PDF as a document, nothing to look for in the files */
+async function sharePdf(){const p=await makePdf();if(!p)return;
+  const file=new File([p.blob],p.name,{type:'application/pdf'});
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:p.name})}catch(e){if(e&&e.name!=='AbortError')saveFile(p.name,p.blob,"Le partage n'a pas abouti : le PDF est enregistré dans le téléphone, joignez-le dans WhatsApp.")}}
+  else saveFile(p.name,p.blob,"Ce téléphone ne propose pas le partage direct : le PDF est enregistré, joignez-le dans WhatsApp.")}
 function sheet(title,fields,cb,check){onSave=cb;onCheck=check||null;
   $('#form').innerHTML=`<h2>${title}</h2>`+fields.map(f=>`<label for="f-${f.k}">${f.l}${f.o?`<select id="f-${f.k}" name="${f.k}">${opts(f.o,f.v)}</select>`:`<input id="f-${f.k}" name="${f.k}" type="${f.t||'text'}" value="${esc(f.v??'')}" ${f.t==='number'?'inputmode="numeric" min="0" step="1"':''} ${f.opt?'':'required'}>`}</label>`).join('')+
   `<p class="err" id="err" role="alert" hidden></p><div class="acts"><button class="btn primary" type="submit">${esc((cb&&cb.label)||'Enregistrer')}</button><button class="btn" type="button" data-act="close">Annuler</button></div>`;
@@ -1104,6 +1124,7 @@ const acts={
  print(){try{window.print()}catch(e){savePdf()}},
  png(){savePng()},
  pdf(){savePdf()},
+ 'share-pdf'(){sharePdf()},
  'all-labels'(){const us=S.units.filter(u=>u.status==='stock');
   if(!us.length)return say('Aucun véhicule en stock.');showLabels('Toutes les étiquettes du stock',us.map(unitLabel))},
  facture(no){const t=S.tickets.find(x=>x.no===no);if(t.facture)return showDoc(t.facture);

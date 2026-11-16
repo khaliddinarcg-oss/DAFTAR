@@ -83,3 +83,8 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
   appelait n'était pas autorisée pour les comptes connectés. Trouvé par un
   essai direct avant publication. Tout nouveau verrou s'essaie en compte
   patron et en compte vendeur, en cas accepté et en cas refusé.
+- **Le PDF d'une facture était une photo de l'écran du téléphone** : une
+  bande étroite au milieu d'une page A4. La page est maintenant redessinée
+  hors écran à la largeur d'une vraie page A4 (794 pixels), et continue sur
+  une seconde page si elle est trop longue. « Envoyer le PDF » ouvre le
+  partage du téléphone (WhatsApp) au lieu de télécharger le fichier.
