@@ -1,5 +1,9 @@
-// Daftar : lit la photo d'une fiche technique, d'un carton ou d'une page de
-// catalogue, et renvoie la fiche d'identité de l'article, prête à vérifier.
+// Daftar : lit avec l'IA la photo
+// - d'une fiche technique, d'un carton ou d'une page de catalogue (mode « fiche ») : renvoie la
+//   fiche d'identité de l'article, prête à vérifier ;
+// - d'un bon d'achat ou d'une facture fournisseur (mode « achat ») : renvoie le fournisseur, la
+//   date, le paiement et les lignes, pour pré-remplir la réception. Les coordonnées du client
+//   (nom, pièce d'identité, téléphone) n'ont aucune case dans la réponse : elles ne sortent pas.
 //
 // Appelée par l'application avec le jeton de la personne connectée.
 // La clé de l'IA (secret ANTHROPIC_API_KEY) ne quitte jamais le serveur.
@@ -48,6 +52,60 @@ const SCHEMA = {
   },
 };
 
+const nombre = { type: "integer" };
+const SCHEMA_ACHAT = {
+  type: "object",
+  additionalProperties: false,
+  required: ["lisible", "fournisseur", "date", "numero", "paiement", "lignes", "garantie_mois", "incertain", "remarque"],
+  properties: {
+    lisible: { type: "boolean" },
+    fournisseur: {
+      type: "object", additionalProperties: false, required: ["nom", "telephone", "ville"],
+      properties: { nom: texte, telephone: texte, ville: texte },
+    },
+    date: texte, numero: texte,
+    paiement: { type: "string", enum: ["paye", "du", ""] },
+    lignes: {
+      type: "array",
+      items: {
+        type: "object", additionalProperties: false,
+        required: ["designation", "marque", "modele", "kind", "quantite", "prix_unitaire", "total"],
+        properties: { designation: texte, marque: texte, modele: texte, kind: { type: "string", enum: ["t", "p"] },
+          quantite: nombre, prix_unitaire: nombre, total: nombre },
+      },
+    },
+    garantie_mois: { anyOf: [{ type: "integer" }, { type: "null" }] },
+    incertain: { type: "array", items: { type: "string", enum: ["fournisseur", "date", "numero", "paiement", "lignes", "prix"] } },
+    remarque: texte,
+  },
+};
+
+const CONSIGNE_ACHAT = `Tu lis la photo d'un bon d'achat, d'un bon de livraison ou d'une facture qu'un
+FOURNISSEUR a remis à un magasin de trottinettes électriques au Maroc. Le magasin veut enregistrer
+la réception de cette marchandise.
+
+Règles :
+- Le document contient aussi les coordonnées du client (nom, CIN ou pièce d'identité, téléphone,
+  adresse) : ignore-les entièrement. Ne les recopie nulle part, pas même dans la remarque.
+- fournisseur : le vendeur qui a émis le document (en-tête, cachet, pied de page) : son nom
+  commercial, son téléphone, sa ville. Jamais le client.
+- date : la date du document au format AAAA-MM-JJ. Les dates marocaines s'écrivent jour/mois/année
+  (07-09-26 = 2026-09-07). "" si illisible.
+- numero : le numéro du bon ou de la facture.
+- paiement : "paye" si le document indique un règlement fait (cash, espèces, payé, virement reçu),
+  "du" s'il reste à payer (crédit, à payer, reste dû, échéance), "" si rien n'est indiqué.
+- lignes : une ligne par article acheté, en ignorant les lignes vides, les lignes de texte
+  (conditions, garantie) et les totaux. designation : le texte tel qu'écrit. marque et modele :
+  séparés si possible (« Trottinette électrique XTREME F1 » → marque "", modele "Xtreme F1" ; une
+  marque connue comme Xiaomi va dans marque). kind : "t" trottinette, "p" pièce ou accessoire.
+  quantite : entier. prix_unitaire et total : en dirhams entiers, le montant que le magasin paie
+  (si le document donne HT et TTC, prends le TTC ; s'il ne donne que HT, prends le HT et mets
+  "prix" dans incertain).
+- garantie_mois : la garantie du fournisseur en mois si elle est écrite, sinon null.
+- lisible=false si ce n'est pas un document d'achat lisible.
+- incertain : ce que tu as lu sans être sûr.
+- remarque : une phrase courte en français pour le commerçant (sans aucune donnée du client).`;
+
 const CONSIGNE = `Tu lis la photo d'une fiche technique, d'un carton, d'une page ou d'une couverture
 de catalogue d'un magasin de trottinettes électriques au Maroc, et tu remplis la fiche d'identité
 de l'article.
@@ -92,9 +150,10 @@ Deno.serve(async (req) => {
   const commeUtilisateur = createClient(url, anon, { global: { headers: { Authorization: `Bearer ${jeton}` } } });
   const admin = createClient(url, service);
 
-  let corps: { magasin?: string; image?: string; type?: string };
+  let corps: { magasin?: string; image?: string; type?: string; mode?: string };
   try { corps = await req.json(); } catch { return refus("Requête illisible."); }
   const { magasin, image, type } = corps;
+  const achat = corps.mode === "achat";
   if (!magasin || !image) return refus("Photo ou magasin manquant.");
   if (!["image/jpeg", "image/png", "image/webp"].includes(type || "")) return refus("Format d'image non pris en charge.");
   if (image.length > TAILLE_MAX) return refus("Photo trop lourde.");
@@ -113,7 +172,7 @@ Deno.serve(async (req) => {
     return refus(`Limite de ${PLAFOND_JOUR} analyses par jour atteinte pour ce magasin. Saisissez la fiche à la main.`, 429);
   }
 
-  const trace = { magasin_id: magasin, user_id: user.user.id, modele: MODELE } as Record<string, unknown>;
+  const trace = { magasin_id: magasin, user_id: user.user.id, modele: MODELE, mode: achat ? "achat" : "fiche" } as Record<string, unknown>;
   try {
     const client = new Anthropic({ apiKey: cle });
     // deno-lint-ignore no-explicit-any
@@ -122,13 +181,13 @@ Deno.serve(async (req) => {
       max_tokens: 4000,
       betas: ["server-side-fallback-2026-07-01"],
       fallbacks: "default",
-      output_config: { effort: "low", format: { type: "json_schema", schema: SCHEMA } },
-      system: CONSIGNE,
+      output_config: { effort: "low", format: { type: "json_schema", schema: achat ? SCHEMA_ACHAT : SCHEMA } },
+      system: achat ? CONSIGNE_ACHAT : CONSIGNE,
       messages: [{
         role: "user",
         content: [
           { type: "image", source: { type: "base64", media_type: type, data: image } },
-          { type: "text", text: "Remplis la fiche de cet article." },
+          { type: "text", text: achat ? "Lis ce document d'achat." : "Remplis la fiche de cet article." },
         ],
       // deno-lint-ignore no-explicit-any
       }] as any,

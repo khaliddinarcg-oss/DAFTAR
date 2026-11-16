@@ -97,6 +97,31 @@ jamais dans l'application. Réservé aux comptes en ligne.
 
 Vérifié par `test/fiche.js` contre la vraie IA et la vraie base : 18 contrôles.
 
+### Réception par photo du bon d'achat — 16 novembre 2026
+
+Stock, « Réception », « Prendre en photo » : l'IA lit le bon d'achat ou la
+facture du fournisseur et en fait un résumé (fournisseur, date, numéro,
+paiement, lignes, garantie du fournisseur). Pour chaque ligne,
+« Réceptionner » :
+
+1. crée le fournisseur s'il est inconnu, pré-rempli d'après le bon ;
+2. ouvre la fiche du nouvel article si le modèle n'existe pas (le prix de
+   vente reste au commerçant) ;
+3. ouvre la réception déjà remplie : quantité, prix d'achat, payé ou à payer,
+   date du bon.
+
+Le numéro du bon et la garantie du fournisseur restent sur la réception. Un
+bon relu ne se reçoit pas deux fois. Les coordonnées du client inscrites sur
+le bon n'ont aucune case dans la réponse de l'IA : elles ne sont jamais
+enregistrées. Environ 0,4 DH par bon.
+
+Vérifié par `test/bon.js` sur un vrai bon Electro Bike (coordonnées du client
+masquées) : 17 contrôles.
+
+Aussi : une couverture de catalogue sans marque (« F1 Electric Scooter »)
+n'est plus rejetée : la fiche s'ouvre avec le modèle et la photo, et conseille
+de photographier la page « Specifications ».
+
 ### Le fournisseur obligatoire à la réception — 16 novembre 2026
 
 - Un article peut être créé sans fournisseur ; il porte un **fournisseur
@@ -159,6 +184,8 @@ Fait : l'article par photo (étape A). Reste, dans l'ordre :
   validée par un magasin sert à tous ; chercher dans la bibliothèque avant
   d'appeler l'IA.
 - **D. Code-barres** du carton.
+- **E. Plusieurs photos pour un article** : couverture et page des
+  caractéristiques lues ensemble.
 
 ### 3. Le devis
 

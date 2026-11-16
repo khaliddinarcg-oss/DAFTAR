@@ -26,6 +26,8 @@ sans tout retaper.
 | Série et quantité | Plus de numéros que d'unités reçues |
 | Taille d'une réception | Plus de 50 unités d'un coup |
 | Article en double | Même marque, même modèle, même type |
+| Date de réception | Une date dans le futur |
+| Bon d'achat relu | Réceptionner deux fois la même ligne d'un même bon |
 | Réception sans fournisseur | Toute réception sans fournisseur choisi (vérifié aussi par le serveur) |
 | Stock de départ | « Stock déjà en magasin (avant Daftar) » après une première réception chez un fournisseur |
 | Supprimer un article | S'il reste du stock, ou un achat impayé |

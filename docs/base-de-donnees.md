@@ -107,6 +107,11 @@ côté serveur » : elles sont prêtes et vides.
 
 ## La lecture de fiche par l'IA
 
+Deux modes : `fiche` (fiche technique, carton, catalogue) et `achat` (bon
+d'achat ou facture fournisseur). En mode `achat`, la réponse n'a aucun champ
+pour les coordonnées du client inscrites sur le document. La colonne `mode`
+de la table `analyses` distingue les deux.
+
 Fonction `analyser-fiche` (Edge Function, code dans
 `supabase/functions/analyser-fiche/`). L'application lui envoie la photo et le
 magasin, avec le jeton de la personne connectée. La fonction :

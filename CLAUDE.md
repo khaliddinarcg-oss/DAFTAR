@@ -17,10 +17,11 @@ interface. Pas d'étape de compilation, pas de dépendances à installer.
 | `test/smoke.js` | Test de bout en bout dans un vrai navigateur |
 | `test/sync.js` | Test de la synchronisation : trois téléphones simulés contre la vraie base |
 | `test/fiche.js` | Test de l'article par photo : vraie IA, vraie base (environ 0,2 DH par passage) |
+| `test/bon.js` | Test de la réception par photo du bon d'achat : vraie IA, vraie base (environ 0,4 DH) |
 | `test/logique.js` | Des milliers d'opérations au hasard sur la logique métier, règles vérifiées après chacune |
 | `test/qa.js` | Clique chaque bouton de chaque écran, en patron et en vendeur, et cherche erreurs et incohérences |
 | `supabase/migrations/` | Schéma de la base Supabase, une migration par étape |
-| `supabase/functions/analyser-fiche/` | Fonction serveur qui lit une fiche produit avec l'IA |
+| `supabase/functions/analyser-fiche/` | Fonction serveur qui lit avec l'IA une fiche produit ou un bon d'achat |
 | `README.md` | Mise en ligne, APK, reprise du code |
 
 Hébergé sur GitHub Pages : <https://khaliddinarcg-oss.github.io/DAFTAR/>.

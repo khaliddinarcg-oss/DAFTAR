@@ -129,7 +129,7 @@ details summary{cursor:pointer;color:var(--muted);font-size:14px;padding:4px 0}
 .labs{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .lab{background:#fff;color:#111;padding:10px;text-align:center;font-size:12px;display:flex;flex-direction:column;gap:3px;border-radius:2px;overflow-wrap:anywhere}
 .lab b{font-size:13px}
-#cam,#pick,#fiche-cam,#fiche-img{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
+#cam,#pick,#fiche-cam,#fiche-img,#bon-cam,#bon-img{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}
 .dash-row{grid-template-columns:repeat(2,1fr);gap:12px 8px}
 .dash-row a.low b{color:var(--warn)}
 nav div{grid-template-columns:repeat(5,1fr)}
@@ -151,7 +151,7 @@ h1 span{overflow-wrap:anywhere}
 @media print{
  @page{margin:8mm}
  html,body{background:#fff !important}
- .app,nav,header,#view,#cam,#logo,#fiche-cam,#fiche-img{display:none !important}
+ .app,nav,header,#view,#cam,#logo,#fiche-cam,#fiche-img,#bon-cam,#bon-img{display:none !important}
  .sheet{position:static !important;inset:auto !important;background:none !important;display:block !important}
  .sheet[hidden]{display:none !important}
  .sheet form{max-width:none !important;max-height:none !important;overflow:visible !important;border:0 !important;padding:0 !important;background:#fff !important;border-radius:0 !important}
@@ -219,6 +219,8 @@ h1 span{overflow-wrap:anywhere}
 <input id="cam" type="file" accept="image/*" capture="environment" aria-label="Photo du QR code" tabindex="-1">
 <input id="fiche-cam" type="file" accept="image/*" capture="environment" aria-label="Photo de la fiche technique" tabindex="-1">
 <input id="fiche-img" type="file" accept="image/*" aria-label="Image de la fiche technique" tabindex="-1">
+<input id="bon-cam" type="file" accept="image/*" capture="environment" aria-label="Photo du bon d'achat" tabindex="-1">
+<input id="bon-img" type="file" accept="image/*" aria-label="Image du bon d'achat" tabindex="-1">
 <input id="logo" type="file" accept="image/*" aria-label="Image du logo" tabindex="-1">
 <input id="pick" type="file" accept="image/*" aria-label="Choisir une image de QR" tabindex="-1">
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
@@ -946,7 +948,7 @@ function showArt(id,t){const r=refOf(S,id);if(!r)return say('Article introuvable
    body=sp.length?`<div class="card">${sp.map(([k,l])=>`<div class="row"><span class="meta">${l}</span><b>${esc(r.spec[k])}</b></div>`).join('')}</div>`
     :empty('Aucune caractéristique saisie.')+(isP()?`<div class="acts"><button class="btn" type="button" data-act="edit-art" data-id="${id}">Compléter la fiche</button></div>`:'')}
   if(artTab==='four'){body=bs.length?bs.map(b=>`<div class="card ${buyRest(b)?'warn':''}"><div class="row"><div><div class="name">${esc(b.initial?'Stock de départ (avant Daftar)':supName(S,b.sup)||'Sans fournisseur')}</div>
-    <div class="meta">${b.dateIncertaine?'date inconnue':fdate(b.d)} · ${esc(b.label)}${isP()?' · '+dh(b.amount):''}${buyRest(b)&&isP()?' · reste '+dh(buyRest(b)):''}</div></div></div>
+    <div class="meta">${b.dateIncertaine?'date inconnue':fdate(b.d)} · ${esc(b.label)}${b.bon?' · bon '+esc(b.bon):''}${b.garFour?' · garantie fournisseur '+b.garFour+' mois':''}${isP()?' · '+dh(b.amount):''}${buyRest(b)&&isP()?' · reste '+dh(buyRest(b)):''}</div></div></div>
     ${b.sup?`<div class="acts"><button class="btn" type="button" data-act="sup" data-id="${b.sup}">Compte du fournisseur</button></div>`:''}</div>`).join('')
     :empty('Aucun achat enregistré pour cet article.')}
   if(artTab==='stock'){body=`<div class="card ${st.k}"><div class="row"><div class="name">${qtyOf(S,r)} en stock</div><span class="pill ${st.k}">${st.t}</span></div>
@@ -970,7 +972,7 @@ function afterRecv(r,us,isNew){paper={name:'etiquettes-qr',fmt:'a4'};panel(`<h2>
   <div class="card ok"><div class="row">${r.img?`<img class="thumb" src="${esc(r.img)}" alt="">`:''}<div><div class="name">${esc(r.name)}</div><div class="meta">${qtyOf(S,r)} en stock · vente ${dh(r.price)}${r.cost&&isP()?" · achat "+dh(r.cost):''}</div></div></div>
    <div class="acts"><button class="btn" type="button" data-act="pic" data-id="${r.id}">${r.img?'Changer la photo':"Ajouter la photo de l'article"}</button></div></div>
   ${us.length?`<h2>Étiquettes à coller</h2><div class="labs" id="paper">${us.map(u=>{const x=unitLabel(u);return `<div class="lab">${qr(x.code)}<b>${esc(x.name)}</b><span>${esc(x.sub)}</span><span>${dh(x.price)}</span></div>`}).join('')}</div>${printBar()}`:''}
-  <div class="acts">${closeBtn}</div>`)}
+  <div class="acts">${bonLeft()?'<button class="btn primary" type="button" data-act="bon-voir">Ligne suivante du bon d’achat</button>':''}${closeBtn}</div>`)}
 /* a supplier label carries the article itself, so scanning it files the article into the stock */
 function receiveFromCode(txt,pre){const f=txt.split('|');
   if(f[0]!=='1'||!f[1])return say("Cette étiquette article n'est pas lisible.");
@@ -987,6 +989,7 @@ function receiveFromCode(txt,pre){const f=txt.split('|');
     S.demo=false;save();afterRecv(r,us,isNew)},d=>d.sup==='new'?'':recvCheck(d,r))}
 const sers=v=>(v||'').split(',').map(x=>x.trim()).filter(Boolean);
 function recvCheck(d,r){const q=n(d.qty);
+  if(d.d&&(!isDay(d.d)||days(d.d)>0))return 'La date de réception ne peut pas être dans le futur.';
   if(d.sup!==undefined){const e=supErr(S,r&&r.id,d.sup);if(e)return e}
   if(q<1)return 'La quantité doit être au moins 1.';
   if(q>R.maxQty)return 'Maximum '+R.maxQty+' unités par réception. Faites-en plusieurs.';
@@ -998,7 +1001,7 @@ function recvCheck(d,r){const q=n(d.qty);
   if(dup)return 'Le numéro de série '+dup+' existe déjà dans ce magasin.';
   if(new Set(l.map(x=>x.toLowerCase())).size!==l.length)return 'Deux numéros de série identiques dans la même réception.';
   return ''}
-function newSup(then){sheet('Nouveau fournisseur',[{k:'name',l:'Nom du fournisseur'},{k:'phone',l:'Téléphone (WhatsApp)',t:'tel',opt:1},{k:'city',l:'Ville',opt:1},{k:'note',l:"Note : ce qu'il fournit, ses délais",opt:1}],
+function newSup(then,p){p=p||{};sheet('Nouveau fournisseur',[{k:'name',l:'Nom du fournisseur',v:p.name},{k:'phone',l:'Téléphone (WhatsApp)',t:'tel',opt:1,v:p.phone},{k:'city',l:'Ville',opt:1,v:p.city},{k:'note',l:"Note : ce qu'il fournit, ses délais",opt:1,v:p.note}],
   d=>{const f={id:uid(),name:d.name.trim(),phone:d.phone.trim(),city:d.city.trim(),note:d.note.trim()};S.sups.push(f);S.demo=false;save();then(f)},
   d=>!d.name.trim()?'Le nom du fournisseur est obligatoire.':S.sups.some(x=>x.name.trim().toLowerCase()===d.name.trim().toLowerCase())?'Ce fournisseur existe déjà.':!okPhone(d.phone)?'Numéro de téléphone marocain attendu, par exemple 0612345678.':'')}
 
@@ -1120,16 +1123,26 @@ const acts={
  'art-labels'(id){const us=S.units.filter(u=>u.ref===id&&u.status==='stock');
   if(!us.length)return say('Aucune unité en stock pour cet article.');showLabels('Étiquettes · '+full(refOf(S,id)),us.map(unitLabel))},
  'edit-art'(id){const r=refOf(S,id);sheet('Fiche : '+esc(full(r)),artFields(r),d=>{artSave(d,r);showArt(id)},d=>artCheck(d,r))},
- 'new-recv'(_b,_c,pre){if(!S.sups.length&&!S.stock.length)return say("Créez d'abord un article ou un fournisseur.");
+ 'new-recv'(_b,_c,pre){if(pre)return acts['recv-main'](null,null,pre);
+  panel(`<h2>Nouvelle réception</h2>
+  <div class="card"><div class="name">Lire le bon d’achat avec l’IA</div>
+   <div class="meta">Photographiez le bon d’achat ou la facture du fournisseur : le fournisseur, la date, les articles, les quantités et les prix se remplissent seuls. Vous vérifiez chaque ligne.</div>
+   ${online()?`<div class="acts"><button class="btn primary" type="button" data-act="bon" data-id="cam">Prendre en photo</button><button class="btn" type="button" data-act="bon" data-id="img">Choisir une image</button></div>`
+    :`<div class="meta"><b>Il faut un compte en ligne.</b> Créez-le ou connectez-vous, puis mettez le magasin en ligne dans Réglages.</div>
+     <div class="acts"><button class="btn primary" type="button" data-act="signup">Créer un compte</button><button class="btn" type="button" data-act="login">Se connecter</button></div>`}</div>
+  <div class="acts"><button class="btn" type="button" data-act="recv-main">Saisir à la main</button>${closeBtn}</div>`)},
+ 'recv-main'(_b,_c,pre){if(!pre&&!S.sups.length&&!S.stock.length)return say("Créez d'abord un article ou un fournisseur.");
   const p=pre||{};
-  sheet('Nouvelle réception',[{k:'sup',l:'Fournisseur',o:supOpts(),v:p.sup||lastSup()},{k:'art',l:'Article',o:artOpts(),v:p.art||(S.stock[0]||{}).id},
+  sheet('Nouvelle réception'+(p.bon?' · bon '+esc(p.bon.no):''),[{k:'sup',l:'Fournisseur',o:supOpts(),v:p.sup||lastSup()},{k:'art',l:'Article',o:artOpts(),v:p.art||(S.stock[0]||{}).id},
    {k:'qty',l:'Quantité reçue (1 à '+R.maxQty+')',t:'number',v:p.qty||1},{k:'cost',l:"Prix d'achat unitaire (DH), facultatif",t:'number',v:p.cost||'',opt:1},
    {k:'etat',l:'Paiement',o:{paye:'Payé maintenant',du:'À payer plus tard'},v:p.etat||'paye'},
+   {k:'d',l:'Date de réception',t:'date',v:p.d||plus(0)},
    {k:'ser',l:'Numéros de série, séparés par des virgules',v:p.ser||'',opt:1}],
-   d=>{if(d.sup==='new')return newSup(nf=>acts['new-recv'](null,null,{...d,sup:nf.id}));
-    if(d.art==='new')return sheet('Nouvel article',artFields(),x=>{const r=artSave(x);acts['new-recv'](null,null,{...d,art:r.id})},x=>artCheck(x));
+   d=>{if(d.sup==='new')return newSup(nf=>acts['recv-main'](null,null,{...p,...d,sup:nf.id}));
+    if(d.art==='new')return sheet('Nouvel article',artFields(p.newArt),x=>{const r=artSave(x);acts['recv-main'](null,null,{...p,...d,art:r.id})},x=>artCheck(x));
     const r=refOf(S,d.art);
-    const us=receive(S,r.id,n(d.qty),n(d.cost),sers(d.ser),null,d.sup,d.etat==='du');
+    const us=receive(S,r.id,n(d.qty),n(d.cost),sers(d.ser),isDay(d.d)?d.d:null,d.sup,d.etat==='du');
+    if(p.bon)bonReceived(p.bon,r);
     afterRecv(r,us,false)},
    d=>d.art==='new'||d.sup==='new'?'':recvCheck(d,refOf(S,d.art)))},
  'add-stock'(){panel(`<h2>Nouvel article</h2>
@@ -1493,20 +1506,81 @@ async function readSheet(file){let img;
   catch(e){res={ok:false,message:e.net?'Pas de connexion : la lecture par IA a besoin d’internet.':e.message}}
   if(!res.ok)return panel(`<h2>Lecture impossible</h2><p>${esc(res.message||'Erreur inconnue.')}</p>${retry}`);
   const f=res.fiche;
-  if(!f.lisible||!f.name)return panel(`<h2>Fiche illisible</h2><p>${esc(f.remarque||'La photo ne montre pas de fiche produit exploitable.')}</p><p class="meta">Cadrez la fiche entière, à plat, avec une bonne lumière.</p>${retry}`);
+  /* a model name is enough to start: the shopkeeper completes the rest (the brand is often missing on
+     unbranded models sold under several names) */
+  if(!f.name)return panel(`<h2>Fiche illisible</h2><p>${esc(f.remarque||'La photo ne montre pas de fiche produit exploitable.')}</p><p class="meta">Cadrez la fiche entière, à plat, avec une bonne lumière.</p>${retry}`);
   const same=S.stock.find(x=>x.kind===f.kind&&full(x).toLowerCase()===((f.brand+' '+f.name).trim()).toLowerCase());
   if(same)return panel(`<h2>Déjà dans votre stock</h2><p>${esc(full(same))} existe déjà.</p><div class="acts"><button class="btn primary" type="button" data-act="art" data-id="${same.id}">Ouvrir sa fiche</button>${closeBtn}</div>`);
   const spec={};Object.keys(SPEC).forEach(k=>{if(f[k])spec[k]=f[k]});
   const b={brand:f.brand,name:f.name,ref:f.ref,kind:f.kind,spec,war:f.war!=null&&WAR[f.war]!==undefined?f.war:12,sup:''};
   /* read on the photo, or inferred from the model: the shopkeeper must see which is which */
   const guess=new Set((f.deduit||[]).filter(k=>f[k])),doubt=new Set((f.incertain||[]).filter(k=>!guess.has(k)));
+  if(!f.brand)doubt.add('brand');
   const pic=cutOut(img,f.photo),src=jpeg(img,700,.6),n=guess.size+doubt.size;
   sheet('Vérifiez la fiche lue par l’IA',artFields(b).map(x=>guess.has(x.k)?{...x,l:x.l+' · déduit du modèle, à vérifier'}:doubt.has(x.k)?{...x,l:x.l+' · à vérifier'}:x),
    d=>{const r=artSave(d);r.img=pic;r.src={type:'ia',d:plus(0),img:src,...(guess.size?{deduit:[...guess]}:{})};showArt(r.id)},d=>artCheck(d));
-  $('#form h2').insertAdjacentHTML('afterend',`<div class="card ${n?'warn':'ok'}"><div class="row">${pic?`<img class="thumb big" src="${pic}" alt="">`:''}<div class="meta">${esc(f.remarque||'')}${guess.size?'<br><b>'+guess.size+' caractéristique'+(guess.size>1?'s':'')+' déduite'+(guess.size>1?'s':'')+' du modèle</b>, pas lue'+(guess.size>1?'s':'')+' sur la photo.':''}${doubt.size?'<br><b>'+doubt.size+' champ'+(doubt.size>1?'s':'')+' à vérifier.</b>':''}<br>Ajoutez le prix de vente, puis enregistrez.</div></div></div>`);
+  $('#form h2').insertAdjacentHTML('afterend',`<div class="card ${n?'warn':'ok'}"><div class="row">${pic?`<img class="thumb big" src="${pic}" alt="">`:''}<div class="meta">${esc(f.remarque||'')}${guess.size?'<br><b>'+guess.size+' caractéristique'+(guess.size>1?'s':'')+' déduite'+(guess.size>1?'s':'')+' du modèle</b>, pas lue'+(guess.size>1?'s':'')+' sur la photo.':''}${doubt.size?'<br><b>'+doubt.size+' champ'+(doubt.size>1?'s':'')+' à vérifier.</b>':''}${Object.keys(spec).length?'':'<br><b>Aucune caractéristique trouvée</b> : photographiez plutôt la page « Specifications » du manuel, ou l’étiquette sous le plateau.'}<br>Ajoutez le prix de vente, puis enregistrez.</div></div></div>`);
   const pr=$('#f-price');if(pr)pr.focus()}
 ['cam','img'].forEach(k=>$('#fiche-'+k).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)readSheet(f)}));
 acts.fiche=k=>{closeSheet();if(!online())return say('Connectez-vous dans Réglages, Compte en ligne, pour utiliser la lecture par IA.');$('#fiche-'+(k==='img'?'img':'cam')).click()};
+
+/* ---------- réception par photo du bon d'achat : l'IA lit, le commerçant vérifie chaque ligne ---------- */
+let lastBon=null;
+const norm=v=>String(v||'').toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g,'');
+const digits=v=>String(v||'').replace(/\D/g,'').replace(/^212/,'0');
+function bonLeft(){return !!(lastBon&&lastBon.lignes.some(l=>!l.fait))}
+function bonReceived(b,r){const x=S.buys[S.buys.length-1];if(x&&x.ref===r.id){x.bon=b.no;if(b.garantie)x.garFour=b.garantie}
+  if(lastBon&&lastBon.lignes[b.i]){lastBon.lignes[b.i].fait=true;lastBon.lignes[b.i].art=r.id}}
+/* the same supplier and the same article, even written a little differently */
+function matchSup(f){const nm=norm(f.nom),ph=digits(f.telephone);
+  return S.sups.find(x=>(nm&&norm(x.name)===nm)||(ph.length>=9&&digits(x.phone)===ph))||S.sups.find(x=>nm&&(norm(x.name).includes(nm)||nm.includes(norm(x.name))))}
+function matchArt(l){const m=norm(l.modele),full2=norm((l.marque||'')+l.modele);if(!m)return null;
+  return S.stock.find(r=>r.kind===l.kind&&(norm(full(r))===full2||norm(r.name)===m))
+    ||S.stock.find(r=>r.kind===l.kind&&norm(r.name).length>=2&&(m.includes(norm(r.name))||norm(full(r)).includes(m)))}
+async function askAI(img,mode){const t=await token(),send=jpeg(img,1568,.85);
+  const r=await fetch(SB.url+'/functions/v1/analyser-fiche',{method:'POST',headers:{apikey:SB.key,Authorization:'Bearer '+t,'Content-Type':'application/json'},
+    body:JSON.stringify({magasin:link.m,mode,type:'image/jpeg',image:send.split(',')[1]})});
+  return r.json().catch(()=>({ok:false,message:'Réponse illisible du serveur.'}))}
+async function readBon(file){let img;
+  try{img=await loadImg(file)}catch(e){return say(esc(e.message))}
+  panel(`<h2>Lecture du bon d’achat…</h2><div class="card"><div class="row"><img class="thumb big" src="${jpeg(img,320,.7)}" alt=""><div class="meta">L’IA lit le document. Comptez cinq à quinze secondes.</div></div></div>`);
+  const retry=`<div class="acts"><button class="btn primary" type="button" data-act="bon" data-id="cam">Reprendre la photo</button><button class="btn" type="button" data-act="recv-main">Saisir à la main</button>${closeBtn}</div>`;
+  let res;try{res=await askAI(img,'achat')}catch(e){res={ok:false,message:e.net?'Pas de connexion : la lecture par IA a besoin d’internet.':e.message}}
+  if(!res.ok)return panel(`<h2>Lecture impossible</h2><p>${esc(res.message||'Erreur inconnue.')}</p>${retry}`);
+  const b=res.fiche;
+  if(!b.lisible||!(b.lignes||[]).length)return panel(`<h2>Bon illisible</h2><p>${esc(b.remarque||'La photo ne montre pas de bon d’achat exploitable.')}</p><p class="meta">Cadrez le document entier, à plat, avec une bonne lumière.</p>${retry}`);
+  const sup=matchSup(b.fournisseur),d=isDay(b.date)&&days(b.date)<=0?b.date:'';
+  lastBon={...b,supId:sup?sup.id:'',d,lignes:b.lignes.map(l=>{const r=matchArt(l);
+    return {...l,art:r?r.id:'',fait:!!(r&&b.numero&&S.buys.some(x=>x.bon===b.numero&&x.ref===r.id))}})};
+  showBon()}
+function showBon(){const b=lastBon,sup=supOf(S,b.supId),doubt=new Set(b.incertain||[]),w=k=>doubt.has(k)?' <span class="neg">à vérifier</span>':'';
+  panel(`<h2>Bon d’achat lu</h2>
+  <div class="card ${sup?'ok':'warn'}"><div class="row"><div><div class="name">${esc(b.fournisseur.nom||'Fournisseur non lu')}${w('fournisseur')}</div>
+   <div class="meta">${esc([b.fournisseur.telephone,b.fournisseur.ville].filter(Boolean).join(' · '))}</div>
+   <div class="meta">${sup?'Fournisseur déjà connu.':'Nouveau fournisseur : il sera créé à la première ligne.'}</div></div></div>
+   <div class="meta">${b.d?'Daté du '+fdate(b.d):'Date non lue : celle du jour sera proposée'}${w('date')} · ${b.numero?'bon '+esc(b.numero):'sans numéro'}${w('numero')} · ${b.paiement==='du'?'à payer':b.paiement==='paye'?'payé':'paiement non indiqué'}${w('paiement')}${b.garantie_mois?' · garantie fournisseur '+b.garantie_mois+' mois':''}</div>
+   ${b.remarque?`<div class="meta">${esc(b.remarque)}</div>`:''}</div>
+  ${b.lignes.map((l,i)=>{const r=refOf(S,l.art);return `<div class="card ${l.fait?'ok':''}"><div class="row"><div><div class="name">${esc(l.designation)}</div>
+    <div class="meta">${l.quantite} × ${dh(l.prix_unitaire)}${w('prix')} · ${r?'article : '+esc(full(r)):'nouvel article à créer'}</div></div>
+    ${l.fait?'<span class="pill ok">Reçu</span>':`<button class="btn primary" type="button" data-act="bon-ligne" data-id="${i}">Réceptionner</button>`}</div></div>`}).join('')}
+  <div class="acts">${closeBtn}</div>`)}
+['cam','img'].forEach(k=>$('#bon-'+k).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)readBon(f)}));
+Object.assign(acts,{
+ bon(k){closeSheet();if(!online())return say('Connectez-vous dans Réglages, Compte en ligne, pour utiliser la lecture par IA.');$('#bon-'+(k==='img'?'img':'cam')).click()},
+ 'bon-voir'(){if(lastBon)showBon()},
+ 'bon-ligne'(i){const b=lastBon,l=b&&b.lignes[i];if(!l)return;
+  /* no stock without a supplier: an unknown supplier is created first, from what the document says */
+  if(!supOf(S,b.supId))return newSup(nf=>{b.supId=nf.id;acts['bon-ligne'](i)},
+    {name:b.fournisseur.nom,phone:digits(b.fournisseur.telephone),city:b.fournisseur.ville,note:b.garantie_mois?'Garantie '+b.garantie_mois+' mois':''});
+  const pre={sup:b.supId,qty:Math.max(1,Math.min(R.maxQty,l.quantite||1)),cost:l.prix_unitaire||'',
+    etat:b.paiement==='du'?'du':'paye',d:b.d||plus(0),bon:{no:b.numero,garantie:b.garantie_mois||0,i:Number(i)}};
+  if(refOf(S,l.art))return acts['recv-main'](null,null,{...pre,art:l.art});
+  /* a new article: its card first (the sale price is the shopkeeper's), then the reception, already filled */
+  sheet('Nouvel article · '+esc(l.designation),artFields({brand:l.marque,name:l.modele,kind:l.kind,war:12,cost:l.prix_unitaire||'',sup:b.supId,spec:{}}),
+   x=>{const r=artSave(x);l.art=r.id;acts['recv-main'](null,null,{...pre,art:r.id})},x=>artCheck(x));
+  $('#form h2').insertAdjacentHTML('afterend','<p class="meta">Lu sur le bon : '+esc(l.designation)+'. Ajoutez le prix de vente ; la réception suit.</p>');
+  const pr=$('#f-price');if(pr)pr.focus()}
+});
 
 applyRole();
 if(online())syncLater(300);
