@@ -25,7 +25,63 @@ nwerrik juj dqayeq ach kaydir, w l-mohim n3ref wach ghadi yfidek wla la. »
 Trois règles : laisser le patron toucher l'écran, se taire après chaque écran,
 ne rien promettre qui n'existe pas.
 
-## Parcours patron, cinq minutes
+## Les trois parcours phares
+
+Chacun dure environ quatre-vingt-dix secondes et vérifie une hypothèse. Les
+faire dans cet ordre ; s'arrêter dès qu'il réagit : sa réaction vaut plus que
+la suite.
+
+### 1. « L'argent qui est dehors » : le crédit
+
+Hypothèse : les crédits impayés sont son premier problème (le pari de toute
+l'application, jamais vérifié).
+
+1. Accueil : « 4 100 DH à encaisser en crédit », « 1 client en retard ».
+2. Carte de Yassine → « Rappel WhatsApp » : le message en darija est écrit,
+   avec le montant et le modèle. Ne pas l'envoyer.
+3. « Encaisser », taper 5 000 : refusé, « Maximum 4 100 DH ».
+4. Taper 1 000 : le reste baisse, le journal l'enregistre.
+
+« Hadi l-flous li barra. Nta katchedha f rassek wla f carnet ? » Puis se taire.
+S'il raconte un client qui ne l'a pas payé, c'est le problème numéro un.
+
+### 2. « Une vente en trente secondes » : la caisse et la facture
+
+Hypothèse : lui ou son vendeur s'en sert sans apprendre.
+
+1. Lui donner le téléphone. Vente → Trottinettes → une photo → panier →
+   Espèces → « Encaisser ».
+2. Le ticket sort ; le stock a baissé, la garantie a commencé.
+3. « Créer la facture » → « Envoyer le PDF » : facture A4 avec ICE, numéro,
+   TVA, prête pour WhatsApp.
+
+« Dir nta l-bi3a. » Puis : « Had l-facture katsifetha l l-client f WhatsApp. »
+Observer où il hésite ; noter s'il demande une imprimante à tickets.
+
+### 3. « Quand vous n'êtes pas là » : le vendeur et la caisse
+
+Hypothèse : le contrôle du vendeur est une vraie inquiétude, et c'est ce qu'il
+paierait.
+
+1. Réglages → « Passer en mode vendeur » : la compta, les prix d'achat et la
+   marge disparaissent.
+2. Accueil → « Compter la caisse » : le vendeur compte sans voir l'attendu.
+3. Retour en patron. Compta → Clôtures : l'écart, la journée clôturée seule à
+   minuit et verrouillée. Puis Tableau de bord : ventes, marge, comparaison
+   avec la semaine passée.
+
+« Mlli katkoun ghayeb, l-vendeur ma kaychoufch l-marge dyalek, w f l-lil
+katchouf ch7al dkhel w ch7al khass ykoun f l-caisse. »
+
+### Après les trois
+
+Une seule question : « Men had tlata, achmen wa7ed ghadi tkhdem bih ghedda ? »
+Noter la réponse, puis son prix.
+
+En réserve : l'article par photo lu par l'IA, seulement s'il demande « et pour
+remplir le stock ? ». Il faut du réseau ; environ 0,2 DH par photo.
+
+## Parcours patron complet, cinq minutes
 
 1. **L'accueil.** Les ventes du jour, puis l'argent en retard. « Ça, c'est
    l'argent qui est dehors. Vous, vous le savez de tête ou sur un carnet ? »
