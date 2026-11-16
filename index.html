@@ -138,6 +138,68 @@ nav a{font-size:11px;letter-spacing:.02em}
 .pos{color:var(--ok)}.neg{color:var(--accent)}
 .kpis.three{grid-template-columns:repeat(3,1fr)}
 .kpis.three .kpi b{font-size:16px}
+/* visual till: categories, product grid, cart. Few words: colour, icon, photo, price. */
+.ar{font-family:"Noto Sans Arabic","Segoe UI",Tahoma,sans-serif;font-style:normal;font-weight:500;color:var(--muted);letter-spacing:0;text-transform:none}
+.pos-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.pos-head .ar{font-size:17px}
+.pos-scan{min-height:64px;font-size:17px;gap:12px}
+.pos-scan svg{width:26px;height:26px}
+.pos-mini{justify-content:center;gap:4px}
+.pos-cats{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pos-cat{position:relative;border:0;cursor:pointer;min-height:136px;padding:14px 14px 12px;display:flex;flex-direction:column;justify-content:space-between;align-items:flex-start;gap:6px;text-align:left;color:var(--ink);
+  background:linear-gradient(155deg,color-mix(in srgb,var(--c) 26%,var(--surface)),var(--surface) 75%);clip-path:var(--cut);font:inherit}
+.pos-cat::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--c);box-shadow:0 0 12px var(--c)}
+.pos-cat svg{width:58px;height:58px;color:var(--c)}
+.pos-cat b{font-family:var(--display);font-style:italic;font-size:18px;letter-spacing:.04em;text-transform:uppercase;line-height:1.1}
+.pos-cat .ar{font-size:15px;display:block}
+.pos-cat .n{position:absolute;top:10px;right:12px;font-family:var(--display);font-weight:700;font-size:15px;background:rgba(0,0,0,.4);padding:2px 12px;clip-path:var(--slant)}
+.pos-cat.none{opacity:.5}
+.pos-top{display:flex;align-items:center;gap:10px}
+.pos-top h2{flex:1;display:flex;align-items:baseline;justify-content:space-between;gap:8px}
+.pos-back{flex:none;width:50px;height:50px;border:0;background:var(--raised);color:var(--ink);font-size:24px;clip-path:var(--cut);cursor:pointer}
+.pos-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.pos-cell{position:relative}
+.pos-prod{width:100%;border:1px solid var(--line);background:var(--surface);color:var(--ink);padding:0;cursor:pointer;display:flex;flex-direction:column;align-items:stretch;text-align:left;clip-path:var(--cut);font:inherit}
+.pos-prod.on{border-color:var(--ok);box-shadow:inset 0 0 0 2px var(--ok)}
+.pos-prod.out{opacity:.42}
+.pos-img{height:108px;background:#fff;display:grid;place-items:center;color:#2b2f36;overflow:hidden}
+.pos-img img{width:100%;height:100%;object-fit:contain}
+.pos-img svg{width:64px;height:64px}
+.pos-name{padding:8px 10px 0;font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pos-price{padding:0 10px;font-family:var(--display);font-style:italic;font-weight:700;font-size:22px}
+.pos-dots{display:flex;gap:4px;padding:4px 10px 11px}
+.pos-dots i{width:10px;height:10px;border-radius:50%;background:var(--ok)}
+.pos-dots i.e{background:var(--line)}
+.pos-badge{position:absolute;top:8px;right:8px;min-width:30px;height:30px;padding:0 6px;border-radius:15px;background:var(--ok);color:#05140c;font-weight:800;display:grid;place-items:center;font-style:normal;pointer-events:none}
+.pos-info{position:absolute;top:6px;left:6px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(11,12,14,.7);color:#fff;font-family:var(--display);font-weight:700;cursor:pointer}
+.pos-cart{position:sticky;bottom:80px;z-index:5;width:100%;border:0;min-height:64px;background:var(--accent);color:#fff;display:flex;align-items:center;gap:12px;padding:0 18px;
+  font-family:var(--display);font-style:italic;font-size:21px;font-weight:700;clip-path:var(--cut);cursor:pointer;box-shadow:0 0 26px rgba(255,75,38,.45)}
+.pos-cart .q{font-style:normal;min-width:34px;height:34px;border-radius:17px;background:#fff;color:var(--accent);display:grid;place-items:center;font-size:17px}
+.pos-cart .ar{color:rgba(255,255,255,.85);font-size:15px;margin-left:auto}
+.pos-cart .go{font-size:24px;font-style:normal}
+.pos-line{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-left:3px solid var(--c);border-radius:4px;padding:10px}
+.pos-line .pos-img{width:58px;height:58px;flex:none}
+.pos-line .pos-img svg{width:42px;height:42px}
+.pos-ln{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pos-ln span{font-size:14px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.pos-ln small{color:var(--muted);font-size:12px}
+.pos-pr{align-self:flex-start;border:0;background:none;color:var(--ink);font-family:var(--display);font-style:italic;font-weight:700;font-size:21px;padding:0;cursor:pointer;border-bottom:1px dashed var(--muted)}
+.pos-qty{display:flex;align-items:center;gap:6px}
+.pos-qty b{min-width:22px;text-align:center;font-family:var(--display);font-size:20px}
+.pos-qty button,.pos-x{width:44px;height:44px;border:0;background:var(--raised);color:var(--ink);font-size:22px;font-weight:700;clip-path:var(--cut);cursor:pointer}
+.pos-total{display:flex;justify-content:space-between;align-items:baseline;border-top:1px dashed var(--line);padding-top:12px}
+.pos-total span{font-family:var(--display);font-weight:600;letter-spacing:.06em;text-transform:uppercase}
+.pos-total b{font-family:var(--display);font-style:italic;font-size:34px;color:var(--led);text-shadow:0 0 14px rgba(143,233,255,.35)}
+.pos-pays{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.pos-pay{min-height:96px;border:1px solid var(--line);background:var(--surface);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+  font-family:var(--display);font-weight:600;font-size:13px;letter-spacing:.04em;text-transform:uppercase;clip-path:var(--cut);cursor:pointer}
+.pos-pay svg{width:34px;height:34px;color:var(--c)}
+.pos-pay .ar{font-size:14px}
+.pos-pay.on{border-color:var(--ok);background:rgba(53,224,140,.12);box-shadow:inset 0 0 0 2px var(--ok)}
+.btn.pos-go{background:var(--ok);color:#05140c;min-height:66px;font-size:18px;gap:10px}
+.btn.pos-go svg{width:26px;height:26px}
+.btn.pos-go .ar{color:rgba(5,20,12,.75)}
+.btn.primary .ar{color:rgba(11,12,14,.6)}
 .chart{display:flex;align-items:flex-end;gap:3px;height:120px;padding-top:8px;border-bottom:1px solid var(--line)}
 .chart i{flex:1;min-height:2px;background:var(--led);border-radius:2px 2px 0 0;opacity:.85}
 .chart i.now{background:var(--accent)}
@@ -278,15 +340,17 @@ const op=(s,type,label,amt,d,ticket)=>{if(amt)s.ops.push({id:uid(),d:d||plus(0),
 
 /* what a shop sells: four kinds of vehicles, each tracked unit by unit with its serial number,
    and parts or accessories, counted. Anything that is not 'p' is a vehicle. */
-const KINDS={t:'Trottinette',v:'Vélo électrique',s:'Scooter électrique',m:'Moto électrique',p:'Pièce ou accessoire'};
-const isVeh=r=>!!r&&r.kind!=='p';
+const KINDS={t:'Trottinette',v:'Vélo électrique',s:'Scooter électrique',m:'Moto électrique',p:'Pièce détachée',a:'Accessoire'};
+/* vehicles are tracked one by one with their serial number; parts and accessories are counted */
+const VEH=new Set(['t','v','s','m']);
+const isVeh=r=>!!r&&VEH.has(r.kind);
 /* stock: one record per vehicle (unit), one counter per part reference */
 const refOf=(s,id)=>s.stock.find(r=>r.id===id);
 const unitsOf=(s,ref,st='stock')=>s.units.filter(u=>u.ref===ref&&u.status===st);
-const qtyOf=(s,r)=>r.kind!=='p'?unitsOf(s,r.id).length:r.qty;
+const qtyOf=(s,r)=>VEH.has(r.kind)?unitsOf(s,r.id).length:r.qty;
 const stockState=(s,r)=>{const q=qtyOf(s,r);return q<=0?{k:'bad',t:'Rupture',o:0}:q<=r.min?{k:'warn',t:'Stock bas',o:1}:{k:'ok',t:'En stock',o:2}};
 const stockLow=s=>s.stock.filter(r=>qtyOf(s,r)<=r.min);
-const stockValue=s=>s.stock.reduce((a,r)=>a+(r.kind!=='p'?unitsOf(s,r.id).reduce((b,u)=>b+(u.cost||r.cost||r.price),0):r.qty*(r.cost||r.price)),0);
+const stockValue=s=>s.stock.reduce((a,r)=>a+(VEH.has(r.kind)?unitsOf(s,r.id).reduce((b,u)=>b+(u.cost||r.cost||r.price),0):r.qty*(r.cost||r.price)),0);
 const autoSerial=(s,r)=>r.name.replace(/[^A-Za-z0-9]/g,'').slice(0,4).toUpperCase()+'-'+String(++s.sn).padStart(5,'0');
 
 const full=r=>((r.brand?r.brand+' ':'')+r.name).trim();
@@ -324,7 +388,7 @@ function receive(s,refId,n,cost,serials,date,sup,unpaid,bookDate){const r=refOf(
   s.buys.push({id:bid,sup:sup||'',d,ref:refId,label:lab,qty:n,amount:amt,paid:unpaid?0:amt,...(initial?{initial:true}:{})});
   if(!unpaid&&!initial){s.pays.push({id:uid(),sup:sup||'',d:bd,amount:amt,buy:bid});
    op(s,'achat','Achat stock : '+lab+(sup?' · '+supName(s,sup):'')+(bd!==d?' (document du '+d.split('-').reverse().join('/')+')':''),-amt,bd)}
-  if(r.kind==='p'){r.qty+=n;return out}
+  if(!VEH.has(r.kind)){r.qty+=n;return out}
   for(let i=0;i<n;i++){const u={id:uid(),ref:refId,serial:(serials&&serials[i])||autoSerial(s,r),cost:cost||r.cost||0,inDate:d,status:'stock',sup:sup||''};s.units.push(u);out.push(u)}
   return out}
 /* Until 16 Nov 2026 the reception forms called receive() without the date: the supplier id landed
@@ -485,7 +549,7 @@ function autoClose(s,today){today=today||plus(0);if(!s.closes)s.closes=[];let n=
   return n}
 function analyse(s){const t30=soldIn(s,30);
   const rows=s.stock.map(r=>{const q=qtyOf(s,r),s30=t30.reduce((a,t)=>a+t.lines.filter(l=>l.ref===r.id).reduce((b,l)=>b+l.qty,0),0);
-    const oldest=(r.kind!=='p'?unitsOf(s,r.id):[]).reduce((a,u)=>Math.max(a,-days(u.inDate)),0);
+    const oldest=(VEH.has(r.kind)?unitsOf(s,r.id):[]).reduce((a,u)=>Math.max(a,-days(u.inDate)),0);
     const done=s.units.filter(u=>u.ref===r.id&&u.status==='vendu');
     const avg=done.length?Math.round(done.reduce((a,u)=>a+days(u.soldDate)-days(u.inDate),0)/done.length):null;
     const cover=s30?Math.round(q/(s30/30)):null,margin=r.cost?r.price-r.cost:null;
@@ -579,7 +643,7 @@ function seed(){const s={shop:'Tanja Trott',demo:true,seq:0,sn:0,fseq:0,aseq:0,c
   {id:'a3',name:'G2 Master',brand:'KuKirin',ref:'KK-G2M',kind:'t',price:11000,cost:9200,min:1,qty:0,war:6,img:'',
    spec:{moteur:'2 × 1000 W',batterie:'52 V · 20,8 Ah',autonomie:'70 km',vitesse:'60 km/h',roues:'11 pouces',poids:'38 kg',charge:'120 kg'}},
   {id:'p1',name:'Chambre à air 10 pouces',brand:'',ref:'PN-10',kind:'p',price:80,cost:35,min:5,qty:0,war:0,spec:{},img:''},
-  {id:'p2',name:'Chargeur 42 V',brand:'',ref:'CH-42',kind:'p',price:250,cost:150,min:2,qty:0,war:3,spec:{},img:''}],
+  {id:'p2',name:'Chargeur 42 V',brand:'',ref:'CH-42',kind:'a',price:250,cost:150,min:2,qty:0,war:3,spec:{},img:''}],
  leads:[
   {id:'l1',name:'Anas',phone:'0600000021',model:'Ninebot Max G2',source:'Instagram',status:'nouveau',last:plus(0)},
   {id:'l2',name:'Rachid',phone:'0600000022',model:'Xiaomi 4 Lite',source:'Avito',status:'discussion',last:plus(-4)}]};
@@ -596,7 +660,7 @@ function seed(){const s={shop:'Tanja Trott',demo:true,seq:0,sn:0,fseq:0,aseq:0,c
   ['a1',-15,'Meryem A.','0600000015','comptant']];
  for(const [ref,ago,name,phone,pay,x,qty] of E){
   const r=refOf(s,ref),o={name,phone,pay,date:plus(ago),months:r.war,credit:x,del:x};
-  if(r.kind!=='p'){const u=unitsOf(s,ref)[0];if(!u)continue;o.lines=[{unit:u.id}]}else o.lines=[{ref,qty:qty||1}];
+  if(VEH.has(r.kind)){const u=unitsOf(s,ref)[0];if(!u)continue;o.lines=[{unit:u.id}]}else o.lines=[{ref,qty:qty||1}];
   sell(s,o)}
  /* one return, to show the flow */
  refund(s,s.tickets.find(t=>t.name==='Meryem A.').no,{reason:'Panne',cond:'atelier',date:plus(-13)});
@@ -737,9 +801,9 @@ function supCard(f){const st=supStats(S,f.id),bills=S.buys.filter(b=>b.sup===f.i
   <div class="meta">${st.n} achat${st.n>1?'s':''}${isP()?' · '+dh(st.total)+' au total':''}${st.last?' · dernier le '+fdate(st.last):''}</div>
   ${bills.map(b=>`<div class="unit"><span class="meta">${fdate(b.d)} · ${esc(b.label)} · reste <b>${dh(buyRest(b))}</b></span>${isP()?`<button class="btn" data-act="pay-buy" data-id="${b.id}">Payer</button>`:''}</div>`).join('')}
   <div class="acts"><button class="btn primary" data-act="sup" data-id="${f.id}">Compte</button><button class="btn" data-act="label-f" data-id="${f.id}">QR</button>${f.phone?`<a class="btn wa" target="_blank" rel="noopener" href="${esc(wa(f.phone,`Salam, m3ak ${S.shop}. Bghit nsewel 3la disponibilité w taman dyal chi mod\u00e8les. Chokran.`))}">Commander</a>`:''}${rm('sups',f.id)}</div></div>`}
-function stockCard(r){const st=stockState(S,r),us=r.kind!=='p'?S.units.filter(u=>u.ref===r.id&&u.status!=='vendu'):[];
+function stockCard(r){const st=stockState(S,r),us=VEH.has(r.kind)?S.units.filter(u=>u.ref===r.id&&u.status!=='vendu'):[];
   return `<div class="card ${st.k}"><div class="row">${r.img?`<img class="thumb" src="${esc(r.img)}" alt="">`:''}<div><div class="name">${esc(full(r))}</div><div class="meta">${KIND[r.kind]}${r.ref?' · '+esc(r.ref):''} · vente ${dh(r.price)}${r.cost&&isP()?' · achat '+dh(r.cost):''}</div></div><span class="pill ${st.k}">${st.t}</span></div>
-  <div class="acts"><span class="amt qty">${qtyOf(S,r)}</span><button class="btn primary" data-act="art" data-id="${r.id}">Fiche</button><button class="btn" data-act="recv" data-id="${r.id}">Réception</button><button class="btn" data-act="pic" data-id="${r.id}">${r.img?'Photo ✓':'Photo'}</button>${r.kind==='p'?`<button class="btn" data-act="label-r" data-id="${r.id}">QR</button>${isP()?`<button class="btn link" data-act="fix" data-id="${r.id}">Corriger</button>`:''}`:''}${rm('stock',r.id)}</div>
+  <div class="acts"><span class="amt qty">${qtyOf(S,r)}</span><button class="btn primary" data-act="art" data-id="${r.id}">Fiche</button><button class="btn" data-act="recv" data-id="${r.id}">Réception</button><button class="btn" data-act="pic" data-id="${r.id}">${r.img?'Photo ✓':'Photo'}</button>${!VEH.has(r.kind)?`<button class="btn" data-act="label-r" data-id="${r.id}">QR</button>${isP()?`<button class="btn link" data-act="fix" data-id="${r.id}">Corriger</button>`:''}`:''}${rm('stock',r.id)}</div>
   ${us.length?`<details><summary>${us.length} unité${us.length>1?'s':''} avec QR code</summary>${us.map(u=>unitRow(u)).join('')}</details>`:''}</div>`}
 function ticketCard(t){const [k,l]=TST[t.status];
   return `<div class="card ${k}"><div class="row"><div><div class="name">${t.no} · ${esc(t.name)}</div><div class="meta">${fdate(t.date)} · ${esc(tLabel(t))} · ${PAY[t.pay]}</div></div><div class="amt">${dh(t.total)}</div></div>
@@ -770,7 +834,7 @@ const MODES={
  garantie:[['Vente récente',null,(a,b)=>b.date.localeCompare(a.date)],['Garantie bientôt finie',v=>warranty(v).n>=0,(a,b)=>warranty(a).n-warranty(b).n],
    ['Réparées',v=>v.repairs.length>0,(a,b)=>b.repairs.length-a.repairs.length],['Nom',null,byName]],
  stock:[['Alerte',null,(a,b)=>stockState(S,a).o-stockState(S,b).o||b.kind.localeCompare(a.kind)],['À commander',r=>qtyOf(S,r)<=r.min,null],
-   ['Quantité',null,(a,b)=>qtyOf(S,b)-qtyOf(S,a)],['Nom',null,byName],['Véhicules',r=>r.kind!=='p',null],['Pièces',r=>r.kind==='p',null]],
+   ['Quantité',null,(a,b)=>qtyOf(S,b)-qtyOf(S,a)],['Nom',null,byName],['Véhicules',r=>VEH.has(r.kind),null],['Pièces et accessoires',r=>!VEH.has(r.kind),null]],
  analyse:[['Plus vendus',null,(a,b)=>b.s30-a.s30],['Dort le plus',null,(a,b)=>b.oldest-a.oldest||a.s30-b.s30],['À commander',x=>x.tag.k!=='ok',null],
    ['Marge',null,(a,b)=>(b.margin||0)-(a.margin||0)]]};
 const LO={nouveau:0,discussion:1,reserve:2,vendu:3,perdu:4},DO={livre:0,expedie:1,retour:2,encaisse:3};
@@ -824,17 +888,12 @@ const views={
   `<h2>Accès</h2><div class="card warn"><div class="row"><div><div class="name">Mode vendeur</div><div class="meta">Prix d'achat, marges et comptabilité réservés au patron.</div></div><span class="pill warn">Vendeur</span></div>
    ${online()&&link.role==='vendeur'?'':'<div class="acts"><button class="btn" data-act="to-boss">Revenir en mode patron</button></div>'}</div>`}
   <p class="foot">${online()?'Les données sont gardées en ligne et partagées avec l’équipe du magasin.':'Les données restent sur ce téléphone uniquement.'}</p>`},
- vente(){const refs=S.stock.filter(r=>qtyOf(S,r)>0);
+ vente(){
   if(!S.stock.length)return `<div class="card bad"><div class="name">Le magasin est vide</div><div class="meta">Aucun article n'existe, donc aucune étiquette ne peut être reconnue et rien ne peut être vendu.</div>
    <div class="acts"><button class="btn primary" data-act="reseed">Charger les exemples</button><button class="btn" data-act="add-stock">Créer un article</button></div></div>`;
-  return `<button class="btn primary wide big" data-act="scan">Scanner l'étiquette de l'article</button>
-  <div class="acts"><button class="btn" data-act="pick">Choisir une image</button><button class="btn" data-act="type-code">Saisir le code</button><button class="btn link" data-act="self-test">Tester le scan</button></div>
-  <p class="meta">Chaque article a son QR. Scannez-en plusieurs : ils s'ajoutent au panier, puis une seule vente et une seule facture.</p>
-  ${cart.length?`<h2>Panier</h2>${cart.map(cartLine).join('')}
-   <div class="card ok"><div class="row"><div class="name">Total</div><div class="amt">${dh(cartTotal())}</div></div>
-    <div class="acts"><button class="btn primary" data-act="checkout">Encaisser</button><button class="btn link" data-act="c-clear">Vider le panier</button></div></div>`:''}
-  <h2>Ou choisir dans la liste</h2>${refs.map(r=>`<div class="card"><div class="row">${r.img?`<img class="thumb" src="${esc(r.img)}" alt="">`:''}<div><div class="name">${esc(full(r))}</div><div class="meta">${qtyOf(S,r)} en stock${r.ref?' · '+esc(r.ref):''}</div></div><div class="amt">${dh(r.price)}</div></div>
-   <div class="acts"><button class="btn primary" data-act="add-cart" data-id="${r.id}">Ajouter</button><button class="btn" data-act="art" data-id="${r.id}">Fiche</button></div></div>`).join('')||empty('Rien en stock. Faites une réception dans Stock.')}`},
+  if(vcat==='panier')return posCart();
+  if(vcat&&CATK[vcat])return posCat(vcat);
+  return posHome()},
  tickets(){return `<div class="row"><h2>Tickets de vente</h2><button class="btn primary" data-act="scan">Scanner un ticket</button></div>
   ${bar('tickets')}
   <p class="meta">Retour ou échange : ouvrez le ticket du client, le stock, le crédit et la garantie se corrigent seuls.</p>${pick('tickets',[...S.tickets].reverse()).map(ticketCard).join('')||empty('Aucun ticket dans cette vue.')}`},
@@ -1104,7 +1163,7 @@ function showArt(id,t){const r=refOf(S,id);if(!r)return say('Article introuvable
     :empty('Aucun achat enregistré pour cet article.')}
   if(artTab==='stock'){body=`<div class="card ${st.k}"><div class="row"><div class="name">${qtyOf(S,r)} en stock</div><span class="pill ${st.k}">${st.t}</span></div>
     <div class="acts"><button class="btn primary" type="button" data-act="recv" data-id="${id}">Réception</button>${qtyOf(S,r)>0?`<button class="btn" type="button" data-act="add-cart" data-id="${id}">Ajouter au panier</button>`:''}</div></div>
-    ${us.length?us.map(u=>unitRow(u)).join(''):(r.kind!=='p'?empty('Aucune unité en magasin.'):'')}`}
+    ${us.length?us.map(u=>unitRow(u)).join(''):(VEH.has(r.kind)?empty('Aucune unité en magasin.'):'')}`}
   if(artTab==='qr'){paper={name:'etiquette-'+(r.ref||r.id),fmt:'a4'};const L=artLabel(r);
    body=`<div class="labs" id="paper"><div class="lab">${qr(L.code)}<b>${esc(L.name)}</b><span>${esc(L.sub)}</span><span>${dh(L.price)}</span></div></div>
     <p class="meta">Collez cette étiquette sur le carton ou la potence. Scannée dans l'onglet Vente, elle remplit le panier ; ailleurs, elle ouvre cette fiche.</p>${printBar()}`}
@@ -1132,7 +1191,7 @@ function receiveFromCode(txt,pre){const f=txt.split('|');
   const isNew=!r;
   const fl=[{k:'qty',l:'Quantité reçue (1 à '+R.maxQty+')',t:'number',v:(pre&&pre.qty)||1},{k:'price',l:'Prix de vente (DH)',t:'number',v:(pre&&pre.price)||(r&&r.price)||price},{k:'cost',l:"Prix d'achat (DH), facultatif",t:'number',v:(pre&&pre.cost)||cost||(r&&r.cost)||'',opt:1},
     {k:'sup',l:'Fournisseur',o:supOpts(r),v:supFor(r,pre)},{k:'etat',l:'Paiement',o:{paye:'Payé maintenant',du:'À payer plus tard'},v:(pre&&pre.etat)||'paye'}];
-  if(kind!=='p')fl.push({k:'ser',l:'Numéro de série',v:(pre&&pre.ser)||ser,opt:1});
+  if(VEH.has(kind))fl.push({k:'ser',l:'Numéro de série',v:(pre&&pre.ser)||ser,opt:1});
   sheet((isNew?'Nouvel article : ':'Réception : ')+esc(name),fl,d=>{
     if(d.sup==='new')return newSup(nf=>receiveFromCode(txt,{...d,sup:nf.id}));
     if(isNew){r={id:uid(),name,kind,price:n(d.price),cost:n(d.cost),min:1,qty:0};S.stock.push(r)}else r.price=n(d.price)||r.price;
@@ -1165,7 +1224,7 @@ const cartLine=(c,i)=>{const r=refOf(S,c.ref);if(!r)return '';
    <button class="btn" data-act="c-price" data-id="${i}">Prix</button><button class="btn link" data-act="c-rm" data-id="${i}">Retirer</button></div></div>`};
 const cartTotal=()=>cart.reduce((a,c)=>a+c.price*c.qty,0);
 function addCart(refId,unitId){const r=refOf(S,refId);if(!r)return say('Article inconnu.');
-  if(r.kind!=='p'){const taken=cart.filter(c=>c.unit).map(c=>c.unit);
+  if(VEH.has(r.kind)){const taken=cart.filter(c=>c.unit).map(c=>c.unit);
     let u=unitId?S.units.find(x=>x.id===unitId):null;
     if(u&&(u.status!=='stock'||taken.includes(u.id)))return say(esc(full(r))+' · '+esc(u.serial)+' n’est pas disponible.');
     if(!u)u=unitsOf(S,refId).find(x=>!taken.includes(x.id));
@@ -1174,15 +1233,16 @@ function addCart(refId,unitId){const r=refOf(S,refId);if(!r)return say('Article 
   else{const c=cart.find(x=>x.ref===refId&&!x.unit);
     if(c){if(c.qty>=r.qty)return say('Seulement '+r.qty+' en stock.');c.qty++}
     else{if(r.qty<1)return say('Plus de '+esc(full(r))+' en stock.');cart.push({ref:refId,unit:null,serial:'',qty:1,price:r.price})}}
+  try{navigator.vibrate&&navigator.vibrate(25)}catch(e){}
   if(tab()!=='vente')location.hash='#vente';else render();
   return true}
 function checkout(){if(!cart.length)return say('Le panier est vide.');
   const total=cartTotal(),scoot=cart.some(c=>c.unit);
-  const f=[{k:'name',l:'Nom du client',opt:1},{k:'phone',l:'Téléphone (WhatsApp)',t:'tel',opt:1},{k:'pay',l:'Paiement',o:PAY,v:'comptant'}];
+  const f=[{k:'name',l:'Nom du client',opt:1},{k:'phone',l:'Téléphone (WhatsApp)',t:'tel',opt:1},{k:'pay',l:'Paiement',o:PAY,v:(typeof vpay==='string'&&PAY[vpay])?vpay:'comptant'}];
   if(scoot)f.push({k:'months',l:'Garantie',o:WAR,v:String(warSnap(refOf(S,cart.find(c=>c.unit).ref).war??12))});
   sheet('Encaisser '+dh(total),f,d=>{
     const base={lines:cart.map(c=>({ref:c.ref,unit:c.unit,qty:c.qty,price:c.price})),name:d.name.trim(),phone:d.phone.trim(),pay:d.pay,months:Number(d.months||0)};
-    const done=x=>{const t=sell(S,{...base,...x});if(t){cart=[];S.demo=false;showTicket(t.no)}else say('Un article du panier n’est plus en stock.')};
+    const done=x=>{const t=sell(S,{...base,...x});if(t){cart=[];vcat='';vpay='comptant';S.demo=false;showTicket(t.no)}else say('Un article du panier n’est plus en stock.')};
     if(d.pay==='credit')sheet('Crédit : '+dh(total),[{k:'paid',l:'Avance payée (DH)',t:'number',v:0},{k:'inst',l:'Montant de chaque tranche (DH)',t:'number',v:Math.ceil(total/4)},{k:'due',l:'Prochaine échéance',t:'date',v:plus(30)}],
       c=>done({credit:{paid:n(c.paid),inst:n(c.inst),due:c.due}}),c=>{
         if(n(c.paid)>total)return "L’avance ne peut pas dépasser le prix : maximum "+dh(total)+'.';
@@ -1258,7 +1318,7 @@ const acts={
  exch(no){const t0=S.tickets.find(x=>x.no===no);
   if(tooOld(S,t0)&&!isP())return say('Cette vente a plus de '+S.rules.retDays+' jours. Seul le patron peut accepter un échange.');
   const av={};S.units.filter(u=>u.status==='stock').forEach(u=>{const r=refOf(S,u.ref);av['U:'+u.id]=r.name+' · '+u.serial+' · '+dh(r.price)});
-  S.stock.filter(r=>r.kind==='p'&&r.qty>0).forEach(r=>{av['R:'+r.id]=r.name+' · '+dh(r.price)});
+  S.stock.filter(r=>!VEH.has(r.kind)&&r.qty>0).forEach(r=>{av['R:'+r.id]=r.name+' · '+dh(r.price)});
   if(!Object.keys(av).length)return say("Rien en stock à donner en échange. Faites un retour simple.");
   sheet('Échange du ticket '+no,[{k:'reason',l:'Motif',o:REASON,v:'Ne convient pas'},{k:'cond',l:"État de l'article rendu",o:COND,v:'stock'},{k:'pick',l:'Nouvel article',o:av,v:Object.keys(av)[0]}],d=>{
    const [k,id]=d.pick.split(':');const nt=exchange(S,no,{reason:d.reason,cond:d.cond},{lines:[k==='U'?{unit:id}:{ref:id,qty:1}]});if(nt)showTicket(nt.no)})},
@@ -1311,7 +1371,7 @@ const acts={
   d=>{const r=artSave(d);showArt(r.id)},d=>artCheck(d))},
  recv(id,_b,pre){const r=refOf(S,id),f=[{k:'qty',l:'Quantité reçue (1 à '+R.maxQty+')',t:'number',v:(pre&&pre.qty)||1},{k:'cost',l:"Prix d'achat unitaire (DH), facultatif",t:'number',v:(pre&&pre.cost)||r.cost||'',opt:1},
    {k:'sup',l:'Fournisseur',o:supOpts(r),v:supFor(r,pre)},{k:'etat',l:'Paiement',o:{paye:'Payé maintenant',du:'À payer plus tard'},v:(pre&&pre.etat)||'paye'}];
-  if(r.kind!=='p')f.push({k:'ser',l:'Numéros de série séparés par des virgules (facultatif)',v:(pre&&pre.ser)||'',opt:1});
+  if(VEH.has(r.kind))f.push({k:'ser',l:'Numéros de série séparés par des virgules (facultatif)',v:(pre&&pre.ser)||'',opt:1});
   sheet('Réception : '+esc(r.name),f,d=>{
    if(d.sup==='new')return newSup(nf=>acts.recv(id,null,{...d,sup:nf.id}));
    const us=receive(S,id,n(d.qty),n(d.cost),sers(d.ser),null,d.sup,d.etat==='du');
@@ -1680,6 +1740,66 @@ async function readSheet(file){let img;
   const pr=$('#f-price');if(pr)pr.focus()}
 ['cam','img'].forEach(k=>$('#fiche-'+k).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)readSheet(f)}));
 acts.fiche=k=>{closeSheet();if(!online())return say('Connectez-vous dans Réglages, Compte en ligne, pour utiliser la lecture par IA.');$('#fiche-'+(k==='img'?'img':'cam')).click()};
+
+/* ---------- caisse visuelle : catégories, grille de photos, panier ----------
+   Few words, as at a restaurant till: each category has its colour and its icon, everywhere; touching a
+   product adds it; the cart stays at the bottom. Labels in French and Arabic. */
+const SVG=(d,w)=>`<svg viewBox="0 0 64 64" fill="none" stroke="currentColor" stroke-width="${w||4}" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${d}</svg>`;
+const ICO={
+ t:SVG('<circle cx="14" cy="50" r="7"/><circle cx="50" cy="50" r="7"/><path d="M14 50h36M41 50 33 11h-9"/>'),
+ v:SVG('<circle cx="14" cy="44" r="11"/><circle cx="50" cy="44" r="11"/><path d="M14 44 25 22h18l7 22M25 22l11 22M41 13h8M25 22l-3-7h-6"/>'),
+ s:SVG('<circle cx="14" cy="48" r="8"/><circle cx="50" cy="48" r="8"/><path d="M22 48h19l7-18H23c-6 0-9 8-9 18M45 30l-4-16h8"/>'),
+ m:SVG('<circle cx="12" cy="46" r="9"/><circle cx="52" cy="46" r="9"/><path d="M12 46l14-14h13l13 14M26 32l-5-8h-6M39 32l5-13h8"/>'),
+ p:SVG('<path d="M41 9a12 12 0 0 0-14 16L10 42l12 12 17-17a12 12 0 0 0 16-14l-8 8-8-8z"/>'),
+ a:SVG('<path d="M10 42a22 22 0 0 1 44 0v4H10zM10 46h44M27 20v9M37 20v9"/>')};
+const CAT=[['t','#5cc8ff','Trottinettes','تروتينيت'],['v','#35e08c','Vélos','بيكالة'],['s','#ffb020','Scooters','سكوتر'],
+  ['m','#ff6b5b','Motos','موطور'],['p','#b89cff','Pièces','قطع الغيار'],['a','#c9d1d9','Accessoires','أكسسوار']];
+const CATK=Object.fromEntries(CAT.map(c=>[c[0],c]));
+const POSPAY=[['comptant','#35e08c','Espèces','كاش',SVG('<rect x="6" y="16" width="52" height="32" rx="4"/><circle cx="32" cy="32" r="8"/>',3.5)],
+  ['credit','#ffb020','Crédit','كريدي',SVG('<rect x="8" y="12" width="48" height="44" rx="4"/><path d="M8 24h48M20 6v10M44 6v10M20 36h8M20 44h16"/>',3.5)],
+  ['livraison','#8fe9ff','Livraison','توصيل',SVG('<path d="M4 16h34v26H4zM38 26h12l10 9v7H38z"/><circle cx="16" cy="48" r="5"/><circle cx="48" cy="48" r="5"/>',3.5)]];
+let vcat='',vbrand='',vpay='comptant';
+const SCANI=SVG('<path d="M8 22V8h14M42 8h14v14M56 42v14H42M22 56H8V42M18 32h28"/>',5);
+const catOf=r=>CATK[r&&r.kind]||CATK.a;
+const dots=q=>`<span class="pos-dots" aria-label="${q} en stock">${[0,1,2].map(i=>`<i class="${i<q?'':'e'}"></i>`).join('')}</span>`;
+const pic=(r,k)=>r&&r.img?`<img src="${esc(r.img)}" alt="">`:ICO[k];
+function cartBar(){if(!cart.length)return '';const n=cart.reduce((a,c)=>a+c.qty,0);
+  return `<button class="pos-cart" data-act="vcat" data-id="panier" aria-label="Ouvrir le panier : ${n} article${n>1?'s':''}, ${dh(cartTotal())}"><span class="q">${n}</span>${dh(cartTotal())}<span class="ar">السلة</span><span class="go">➜</span></button>`}
+function posHome(){
+  return `<div class="pos-head"><h2>Vendre</h2><span class="ar">بيع</span></div>
+  <button class="btn primary wide big pos-scan" data-act="scan">${SCANI}Scanner <span class="ar">سكاني</span></button>
+  <div class="acts pos-mini"><button class="btn link" data-act="pick">Photo du QR</button><button class="btn link" data-act="type-code">Taper le code</button></div>
+  <div class="pos-cats">${CAT.map(([k,c,fr,ar])=>{const n=S.stock.filter(r=>r.kind===k).reduce((a,r)=>a+qtyOf(S,r),0);
+    return `<button class="pos-cat${n?'':' none'}" style="--c:${c}" data-act="vcat" data-id="${k}" aria-label="${fr} : ${n} en stock">${ICO[k]}<span><b>${fr}</b><span class="ar">${ar}</span></span><span class="n">${n}</span></button>`}).join('')}</div>
+  ${cartBar()}`}
+function posCat(k){const [,c,fr,ar]=CATK[k],all=S.stock.filter(r=>r.kind===k),brands=[...new Set(all.map(r=>r.brand).filter(Boolean))].sort();
+  if(vbrand&&!brands.includes(vbrand))vbrand='';
+  const items=all.filter(r=>!vbrand||r.brand===vbrand).sort((a,b)=>(qtyOf(S,b)>0)-(qtyOf(S,a)>0)||full(a).localeCompare(full(b)));
+  return `<div class="pos-top"><button class="pos-back" data-act="vcat" data-id="" aria-label="Retour aux catégories">←</button><h2>${fr}<span class="ar">${ar}</span></h2></div>
+  ${brands.length>1?`<div class="subnav sorts"><button type="button" data-act="vbrand" data-id=""${vbrand?'':' aria-current="page"'}>Toutes</button>${brands.map(b=>`<button type="button" data-act="vbrand" data-id="${esc(b)}"${b===vbrand?' aria-current="page"':''}>${esc(b)}</button>`).join('')}</div>`:''}
+  ${items.length?`<div class="pos-grid">${items.map(r=>{const q=qtyOf(S,r),inC=cart.filter(x=>x.ref===r.id).reduce((a,x)=>a+x.qty,0);
+    return `<div class="pos-cell"><button class="pos-prod${q?'':' out'}${inC?' on':''}" style="--c:${c}" data-act="add-cart" data-id="${r.id}" aria-label="${esc(full(r))}, ${dh(r.price)}, ${q} en stock">
+      <span class="pos-img">${pic(r,k)}</span><span class="pos-name">${esc(full(r))}</span><span class="pos-price">${dh(r.price).replace(' DH','')}</span>${dots(q)}</button>
+      ${inC?`<span class="pos-badge">${inC}</span>`:''}<button class="pos-info" data-act="art" data-id="${r.id}" aria-label="Fiche de ${esc(full(r))}">i</button></div>`}).join('')}</div>`
+   :empty('Aucun article dans cette catégorie.')+(isP()?'<div class="acts"><button class="btn" data-act="add-stock">Nouvel article</button></div>':'')}
+  ${cartBar()}`}
+function posCart(){const tot=cartTotal();
+  if(!cart.length)return `<div class="pos-top"><button class="pos-back" data-act="vcat" data-id="" aria-label="Retour">←</button><h2>Panier<span class="ar">السلة</span></h2></div>${empty('Le panier est vide. Touchez un article pour l’ajouter.')}`;
+  return `<div class="pos-top"><button class="pos-back" data-act="vcat" data-id="${esc(vbackCat||'')}" aria-label="Ajouter d’autres articles">←</button><h2>Panier<span class="ar">السلة</span></h2></div>
+  ${cart.map((x,i)=>{const r=refOf(S,x.ref),k=(r&&r.kind)||'a',c=catOf(r)[1];if(!r)return '';
+    return `<div class="pos-line" style="--c:${c}"><span class="pos-img">${pic(r,k)}</span><div class="pos-ln"><span>${esc(full(r))}</span>${x.serial?`<small>N° ${esc(x.serial)}</small>`:''}
+      <button class="pos-pr" data-act="c-price" data-id="${i}" aria-label="Changer le prix">${dh(x.price*x.qty)}</button></div>
+      ${x.unit?`<button class="pos-x" data-act="c-rm" data-id="${i}" aria-label="Retirer">✕</button>`:`<div class="pos-qty"><button data-act="c-less" data-id="${i}" aria-label="Moins">−</button><b>${x.qty}</b><button data-act="c-more" data-id="${i}" aria-label="Plus">+</button></div>`}</div>`}).join('')}
+  <div class="pos-total"><span>Total <span class="ar">المجموع</span></span><b>${dh(tot)}</b></div>
+  <div class="pos-pays">${POSPAY.map(([k,c,fr,ar,ic])=>`<button class="pos-pay${vpay===k?' on':''}" style="--c:${c}" data-act="vpay" data-id="${k}" aria-pressed="${vpay===k}">${ic}${fr}<span class="ar">${ar}</span></button>`).join('')}</div>
+  <button class="btn wide big pos-go" data-act="checkout">${SVG('<path d="M12 34l13 13 27-30"/>',6)}Encaisser <span class="ar">خلّص</span></button>
+  <div class="acts pos-mini"><button class="btn link" data-act="c-clear">Vider le panier</button></div>`}
+let vbackCat='';
+Object.assign(acts,{
+ vcat(k){if(k==='panier'){if(vcat&&vcat!=='panier')vbackCat=vcat}else vbrand='';vcat=k||'';render();scrollTo(0,0)},
+ vbrand(b){vbrand=b||'';render()},
+ vpay(k){vpay=k;render()}
+});
 
 /* ---------- clôtures, caisse et tableau de bord ---------- */
 let bordP='mois',cloP='jours';

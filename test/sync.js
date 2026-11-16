@@ -36,7 +36,10 @@ let fails=0;const ok=(cond,msg)=>{console.log((cond?'OK   ':'ÉCHEC ')+msg);if(!
     await p.page.waitForSelector('#sync-st');await p.page.evaluate(()=>{document.querySelector('#sync-st').textContent='…'});await click(p,'sync-now');
     await p.page.waitForFunction(()=>/À jour/.test((document.querySelector('#sync-st')||{}).textContent||''),null,{timeout:20000})
       .catch(async e=>{console.log('   état '+p.name+' : '+await p.page.evaluate(()=>document.querySelector('#view').textContent.slice(0,400)));throw e})}
-  async function sell(p,ref,name){await p.page.evaluate(()=>{location.hash='#vente'});await click(p,'add-cart',ref);await click(p,'checkout');
+  /* the till: open the article's category, touch the article, open the cart, cash in */
+  async function sell(p,ref,name){await p.page.evaluate(()=>{location.hash='#vente'});
+    const k=await p.page.evaluate(id=>(JSON.parse(localStorage.getItem('daftar-v3')).stock.find(r=>r.id===id)||{}).kind,ref);
+    await click(p,'vcat',k);await click(p,'add-cart',ref);await p.page.click('.pos-cart');await click(p,'checkout');
     await p.page.fill('#f-name',name);await p.page.click('#form button[type=submit]');await p.page.waitForTimeout(300);await click(p,'close')}
   const hasCost=s=>s.stock.some(r=>'cost' in r)||s.units.some(u=>'cost' in u);
 
@@ -55,7 +58,7 @@ let fails=0;const ok=(cond,msg)=>{console.log((cond?'OK   ':'ÉCHEC ')+msg);if(!
 
     /* B : le vendeur ouvre le magasin sur son téléphone */
     const B=await phone('B');await login(B,V);
-    await B.page.waitForSelector('[data-act="open-shop"]',{timeout:15000});await B.page.click('[data-act="open-shop"]');
+    await B.page.waitForSelector('[data-act="open-shop"]',{timeout:15000});await B.page.locator('[data-act="open-shop"]').last().click();
     await B.page.waitForFunction(()=>/À jour/.test((document.querySelector('#sync-st')||{}).textContent||''),null,{timeout:30000});
     const b0=await state(B);
     ok(b0.stock.length===a0.stock.length&&b0.tickets.length===a0.tickets.length,'B : même stock et mêmes tickets que A ('+b0.stock.length+' articles, '+b0.tickets.length+' tickets)');
@@ -86,7 +89,7 @@ let fails=0;const ok=(cond,msg)=>{console.log((cond?'OK   ':'ÉCHEC ')+msg);if(!
 
     /* C : le patron perd son téléphone et se reconnecte sur un autre */
     const C=await phone('C');await login(C,P);
-    await C.page.waitForSelector('[data-act="open-shop"]',{timeout:15000});await C.page.click('[data-act="open-shop"]');
+    await C.page.waitForSelector('[data-act="open-shop"]',{timeout:15000});await C.page.locator('[data-act="open-shop"]').last().click();
     await C.page.waitForFunction(()=>/À jour/.test((document.querySelector('#sync-st')||{}).textContent||''),null,{timeout:30000});
     await synced(A);const a3=await state(A),c3=await state(C);
     const same=k=>JSON.stringify(a3[k].map(x=>x.id).sort())===JSON.stringify(c3[k].map(x=>x.id).sort());

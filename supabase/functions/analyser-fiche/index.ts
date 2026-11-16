@@ -34,7 +34,7 @@ const SCHEMA = {
     "vitesse", "roues", "poids", "charge", "incertain", "deduit", "photo", "remarque"],
   properties: {
     lisible: { type: "boolean" },
-    kind: { type: "string", enum: ["t", "v", "s", "m", "p"] },
+    kind: { type: "string", enum: ["t", "v", "s", "m", "p", "a"] },
     brand: texte, name: texte, ref: texte,
     war: { anyOf: [{ type: "integer" }, { type: "null" }] },
     moteur: texte, batterie: texte, autonomie: texte, vitesse: texte,
@@ -70,7 +70,7 @@ const SCHEMA_ACHAT = {
       items: {
         type: "object", additionalProperties: false,
         required: ["designation", "marque", "modele", "kind", "quantite", "prix_unitaire", "total"],
-        properties: { designation: texte, marque: texte, modele: texte, kind: { type: "string", enum: ["t", "v", "s", "m", "p"] },
+        properties: { designation: texte, marque: texte, modele: texte, kind: { type: "string", enum: ["t", "v", "s", "m", "p", "a"] },
           quantite: nombre, prix_unitaire: nombre, total: nombre },
       },
     },
@@ -98,7 +98,8 @@ Règles :
   (conditions, garantie) et les totaux. designation : le texte tel qu'écrit. marque et modele :
   séparés si possible (« Trottinette électrique XTREME F1 » → marque "", modele "Xtreme F1" ; une
   marque connue comme Xiaomi va dans marque). kind : "t" trottinette, "v" vélo électrique,
-  "s" scooter électrique, "m" moto électrique, "p" pièce ou accessoire.
+  "s" scooter électrique, "m" moto électrique, "p" pièce détachée (chambre à air, pneu, frein,
+  batterie de rechange…), "a" accessoire (casque, antivol, chargeur, sacoche, gants…).
   quantite : entier. prix_unitaire et total : en dirhams entiers, le montant que le magasin paie
   (si le document donne HT et TTC, prends le TTC ; s'il ne donne que HT, prends le HT et mets
   "prix" dans incertain).
@@ -122,7 +123,8 @@ Règles :
   du modèle écrit) : mets brand et name dans incertain, et dis-le dans la remarque (« reconnu à
   l'apparence, pas lu »). Si plusieurs modèles ou générations se ressemblent, laisse name vide.
 - kind : "t" trottinette, "v" vélo électrique, "s" scooter électrique, "m" moto électrique,
-  "p" pièce ou accessoire.
+  "p" pièce détachée (chambre à air, pneu, frein, batterie de rechange…), "a" accessoire (casque,
+  antivol, chargeur, sacoche, gants…).
 - brand : la marque (Xiaomi, Segway-Ninebot, Kukirin, Kugoo, Dualtron, Niu, Yadea, Super Soco…).
   name : le modèle seul, sans la marque (« 4 Lite », « Max G2 », « G2 Master »).
   ref : la référence ou le code produit s'il est imprimé, sinon "".

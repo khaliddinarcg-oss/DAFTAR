@@ -2,8 +2,10 @@
 
 Application de caisse et de gestion pour les magasins de trottinettes, vélos,
 scooters et motos électriques au Maroc, à Tanger d'abord. Types d'articles dans
-`KINDS` : t trottinette, v vélo, s scooter, m moto (des véhicules, suivis un par
-un avec leur numéro de série) et p pièce ou accessoire (comptés). Interface en français, messages clients en darija.
+`KINDS` : t trottinette, v vélo, s scooter, m moto (des véhicules, `VEH`, suivis
+un par un avec leur numéro de série), p pièce détachée et a accessoire (comptés).
+L'écran de vente est une caisse visuelle (catégories, grille de photos, panier en
+bas), libellés en français et en arabe : peu de mots, des icônes et des couleurs. Interface en français, messages clients en darija.
 Le produit est en phase de validation terrain : il est montré aux commerçants
 pour savoir ce qu'ils paieraient, pas encore vendu.
 

@@ -39,6 +39,9 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
 | Comptage de caisse à l'aveugle pour le vendeur | Il tape ce qu'il compte sans voir ce qui est attendu : l'écart dit la vérité |
 | La caisse attendue part du dernier comptage | Personne ne connaît le contenu du tiroir avant le premier comptage ; additionner tout l'historique donnait −12 650 DH dans le magasin d'exemple |
 | Le tableau de bord compare à la période précédente coupée à la même durée | Un mois en cours n'est pas comparé à un mois entier |
+| Caisse visuelle, comme dans un restaurant (17 nov. 2026) | Beaucoup de vendeurs lisent mal le français. Une couleur et une icône par catégorie, une photo par article, un toucher pour ajouter, le panier toujours en bas. L'écran des catégories compte 10 mots, l'ancien écran de vente 114 |
+| Français et arabe ensemble sur la caisse | Demandé par le patron. Les mots arabes (تروتينيت، بيكالة، موطور، كريدي، خلّص…) sont à faire valider par des commerçants |
+| Accessoires séparés des pièces détachées | Casque, antivol, chargeur d'un côté ; chambre à air, frein, pneu de l'autre. Les véhicules sont listés explicitement (`VEH`) au lieu de « tout ce qui n'est pas une pièce » |
 
 ## Erreurs commises, pour ne pas les refaire
 

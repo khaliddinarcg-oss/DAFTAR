@@ -122,6 +122,23 @@ Aussi : une couverture de catalogue sans marque (« F1 Electric Scooter »)
 n'est plus rejetée : la fiche s'ouvre avec le modèle et la photo, et conseille
 de photographier la page « Specifications ».
 
+### Caisse visuelle — 17 novembre 2026
+
+Vente, en trois écrans, libellés en français et en arabe :
+
+1. **Catégories** : Scanner en haut, puis six grandes cases de couleur avec
+   leur icône et le nombre en stock (trottinettes, vélos, scooters, motos,
+   pièces, accessoires).
+2. **Articles** d'une catégorie : grille de photos (l'icône de la catégorie
+   à défaut), prix en grand, stock en points, filtre par marque. Un toucher
+   ajoute l'article ; le « i » ouvre sa fiche.
+3. **Panier** : chaque ligne avec sa photo, − et + ou ✕, prix modifiable en
+   le touchant ; total en grand ; paiement en trois cases (espèces, crédit,
+   livraison) ; « Encaisser ».
+
+Le panier reste visible en bas de chaque écran. Prochaine étape : le devis,
+depuis ce panier.
+
 ### Clôtures, caisse et tableau de bord — 16 novembre 2026
 
 - **Clôture automatique** de chaque journée à minuit ; la journée passée est
@@ -211,7 +228,7 @@ Fait : l'article par photo (étape A). Reste, dans l'ordre :
 - **E. Plusieurs photos pour un article** : couverture et page des
   caractéristiques lues ensemble.
 
-### 3. Le devis
+### 3. Le devis — prochaine étape, depuis le panier de la caisse visuelle
 
 Cycle complet : devis (envoyé, accepté, refusé, expiré) → vente → facture →
 avoir. Le devis ne touche pas au stock ; c'est la vente qui le sort.
