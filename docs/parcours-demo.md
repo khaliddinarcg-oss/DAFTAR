@@ -4,6 +4,8 @@
 
 - Ouvrir l'application et la laisser chargée.
 - Réglages → « Remettre les exemples », pour effacer la visite précédente.
+  Le faire sans compte connecté : pour un magasin en ligne, ce bouton est
+  désactivé.
 - Vérifier qu'on est en mode patron.
 - Avoir le catalogue imprimé en poche : un téléphone ne peut pas scanner son
   propre écran.
@@ -32,12 +34,15 @@ ne rien promettre qui n'existe pas.
    message est écrit, avec le montant et le modèle. Ne pas l'envoyer.
 3. **L'erreur de caisse.** Encaisser 3 000 DH sur un reste de 2 000 : refusé,
    le maximum s'affiche. « Si votre vendeur se trompe, il ne peut pas. »
-4. **Une vente complète.** Scanner une carte du catalogue, le panier se
-   remplit, encaisser, le ticket sort. « Le stock a baissé tout seul, la
-   garantie a commencé. »
+4. **Une vente complète.** Vente → la case Trottinettes → toucher la photo
+   d'un modèle : il part dans le panier en bas. Toucher le panier, choisir
+   Espèces, « Encaisser », le ticket sort. « Le stock a baissé tout seul, la
+   garantie a commencé. » Laisser le patron faire la deuxième vente lui-même ;
+   lui montrer aussi le bouton Scanner en haut de la caisse.
 5. **La fiche article.** Scanner hors de l'onglet Vente : identité, technique,
    fournisseur, stock, QR.
-6. **Le retour.** Tickets → le ticket → Retour. Tout se corrige d'un coup.
+6. **Le retour.** Vente → Tickets → bouton « Retour » sur la carte du ticket.
+   Tout se corrige d'un coup.
 7. **Ce qui dort.** Stock → Analyse : ce qui part vite, ce qui dort, les
    ruptures. « Chez vous, quel modèle dort en ce moment ? »
 8. **Le comptable.** Compta → Journal → Exporter en Excel.
@@ -48,7 +53,7 @@ S'il décroche, s'arrêter et passer aux questions.
 
 Réglages → « Passer en mode vendeur ». Montrer ce qui disparaît : la
 comptabilité, l'analyse, les prix d'achat. Puis tendre le téléphone au vendeur
-pour qu'il fasse une vente. Revenir en mode patron avec le code.
+pour qu'il fasse une vente. Revenir en mode patron (avec le code, si un code a été mis dans Réglages).
 
 Être honnête : aujourd'hui c'est un verrou d'affichage sur un seul téléphone,
 pas un vrai compte.

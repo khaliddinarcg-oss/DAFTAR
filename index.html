@@ -983,8 +983,8 @@ const views={
   if(!ms.includes(jm)&&jm)ms.unshift(jm);
   ms.forEach(m=>{mo[m]=new Date(m+'-01T00:00:00').toLocaleDateString('fr-FR',{month:'long',year:'numeric'})});const j=journal(S,jm);
   return `<h2>Journal des opérations</h2>
-  <div class="acts">${DL?`<button class="btn primary" data-act="xlsx">Exporter en Excel</button><button class="btn" data-act="csv">Exporter en CSV</button>`:''}<button class="btn${DL?' link':''}" data-act="copy">Copier le journal</button></div>
-  <p class="meta">${DL?'Excel : un classeur complet pour le comptable (journal, ventes, factures, crédits, stock). CSV : le journal seul, pour import dans un logiciel.':"L'export en fichier n'est pas disponible dans cette vue : copiez le journal et collez-le dans un tableur."}</p>
+  <div class="acts">${DL||SOLO?`<button class="btn primary" data-act="xlsx">Exporter en Excel</button><button class="btn" data-act="csv">Exporter en CSV</button>`:''}<button class="btn${DL||SOLO?' link':''}" data-act="copy">Copier le journal</button></div>
+  <p class="meta">${DL||SOLO?'Excel : un classeur complet pour le comptable (journal, ventes, factures, crédits, stock). CSV : le journal seul, pour import dans un logiciel.':"L'export en fichier n'est pas disponible dans cette vue : copiez le journal et collez-le dans un tableur."}</p>
   <select aria-label="Période" data-change="jm" class="full">${opts(mo,jm)}</select>
   <div class="kpis three"><div class="kpi"><b class="pos">${dh(j.inn)}</b><span>entrées</span></div><div class="kpi"><b class="neg">${dh(j.out)}</b><span>sorties</span></div><div class="kpi"><b>${dh(j.net)}</b><span>solde</span></div></div>
   ${bar('journal')}${pick('journal',j.l).map(opRow).join('')||empty('Aucune opération dans cette vue.')}`},
