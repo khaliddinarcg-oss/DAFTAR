@@ -70,4 +70,6 @@ prix d'achat, les achats ni le journal (voir `docs/base-de-donnees.md`).
 | Dernier patron | Retirer ou rétrograder le dernier patron d'un magasin |
 | Équipe | Ajouter quelqu'un qui n'a pas encore créé son compte |
 | Magasin en ligne | « Remettre les exemples » et « Tout vider », qui effaceraient chez toute l'équipe |
+| Réglages du magasin | Nom, facturation, remise maximale, délai de retour changés par un autre que le patron |
+| Vente encaissée | Supprimer un ticket ou une écriture du journal ; changer les montants d'un ticket (même le patron : retour ou échange) |
 | Lecture par IA | Plus de 60 analyses de fiche par magasin et par jour ; un compte qui n'est ni patron ni vendeur du magasin |

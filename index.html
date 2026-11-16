@@ -299,6 +299,12 @@ function receive(s,refId,n,cost,serials,date,sup,unpaid){const r=refOf(s,refId),
 /* Until 16 Nov 2026 the reception forms called receive() without the date: the supplier id landed
    in the date, the supplier stayed empty, "à payer plus tard" was ignored. This puts the supplier
    back where it belongs. The real date is lost: today's date is used and marked uncertain. */
+/* Until 16 Nov 2026 the sample shop renamed its scooters without updating the ticket lines: a
+   return then left the scooter "sold". Lines are relinked to their scooter by serial number. */
+function relinkUnits(s){let n=0;
+  s.tickets.forEach(t=>(t.lines||[]).forEach(l=>{if(!l.unit||s.units.some(u=>u.id===l.unit))return;
+    const u=s.units.find(x=>x.serial===l.serial&&x.ref===l.ref);if(u){l.unit=u.id;n++}}));
+  return n}
 const isDay=v=>/^\d{4}-\d{2}-\d{2}$/.test(v||'');
 function repairReceptions(s){let n=0;const today=plus(0);
   s.buys.forEach(b=>{if(isDay(b.d))return;
@@ -522,7 +528,7 @@ function seed(){const s={shop:'Tanja Trott',demo:true,seq:0,sn:0,fseq:0,aseq:0,c
  invoice(s,s.tickets.find(t=>t.name==='Omar T.').no,{kind:'b2c',name:'Omar T.'},plus(-1));
  s.sales.find(v=>v.name==='Imane K.').repairs.push({d:plus(-4),what:'Chambre à air arrière',price:120});
  const map={};s.units.forEach((u,i)=>{map[u.id]='u'+(i+1);u.id=map[u.id]});
- s.tickets.forEach(t=>{if(t.unit&&map[t.unit])t.unit=map[t.unit]});
+ s.tickets.forEach(t=>t.lines.forEach(l=>{if(l.unit&&map[l.unit])l.unit=map[l.unit]}));
  return s}
 
 const rest=c=>c.total-c.paid;
@@ -574,11 +580,15 @@ try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
 if(!S||!S.units||!S.tickets||!S.ops||!S.info||!S.sups||!S.buys)S=seed();
 if(!S.rules)S.rules={...RULES};
 if(!S.pays)S.pays=[];
-const repaired=repairReceptions(S);if(repaired)try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
+const repaired=repairReceptions(S)+relinkUnits(S);if(repaired)try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}
 if(S.info.url===undefined)S.info.url=APP;
 if(!S.role)S.role='patron';if(S.pin===undefined)S.pin='';
 const isP=()=>S.role==='patron';
-const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}if(online())syncLater()};
+/* the phone's storage is small (about 5 MB): when it is full, say so instead of losing data quietly */
+let fullWarned=false;
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S));fullWarned=false}
+  catch(e){if(!fullWarned){fullWarned=true;setTimeout(()=>say('<b>La mémoire du téléphone est pleine.</b> Les dernières modifications ne sont pas enregistrées dans ce téléphone'+(online()?', mais elles partent au serveur.':'.')+' Retirez des photos d’articles, ou exportez puis videz les anciennes données.'),0)}}
+  if(online())syncLater()};
 const $=q=>document.querySelector(q);
 const esc=v=>String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
 const LEAD={nouveau:'Nouveau',discussion:'En discussion',reserve:'Réservé',vendu:'Vendu',perdu:'Perdu'};
@@ -594,9 +604,10 @@ function artFields(r){const b=r||{spec:{}};
    {k:'cost',l:"Prix d'achat habituel (DH)",t:'number',v:b.cost||'',opt:1},{k:'min',l:"M'alerter quand il en reste",t:'number',v:b.min??1},
    {k:'war',l:'Garantie accordée au client',o:WAR,v:String(b.war??12)},
    {k:'sup',l:'Fournisseur habituel (facultatif)',o:habSupOpts(),v:b.sup||''}]
+   .filter(f=>f.k!=='cost'||isP())
    .concat(Object.entries(SPEC).map(([k,l])=>({k,l,v:(b.spec||{})[k]||'',opt:1})))}
 function artSave(d,r){const spec={};Object.keys(SPEC).forEach(k=>{if(d[k].trim())spec[k]=d[k].trim()});
-  const o={name:d.name.trim(),brand:d.brand.trim(),ref:d.ref.trim(),kind:d.kind,price:n(d.price),cost:n(d.cost),min:n(d.min),war:Number(d.war),spec,sup:d.sup||''};
+  const o={name:d.name.trim(),brand:d.brand.trim(),ref:d.ref.trim(),kind:d.kind,price:n(d.price),cost:d.cost===undefined?(r?r.cost:undefined):n(d.cost),min:n(d.min),war:Number(d.war),spec,sup:d.sup||''};
   if(r)return Object.assign(r,o);const x={id:uid(),qty:0,img:'',...o};S.stock.push(x);return x}
 function artCheck(d,r){const nm=d.name.trim();
   if(!nm)return 'Le modèle est obligatoire.';
@@ -927,7 +938,7 @@ function showArt(id,t){const r=refOf(S,id);if(!r)return say('Article introuvable
     <div class="row"><span class="meta">Modèle</span><b>${esc(r.name)}</b></div>
     <div class="row"><span class="meta">Garantie</span><b>${WAR[r.war]||r.war+' mois'}</b></div>
     <div class="row"><span class="meta">Fournisseur habituel</span><b>${r.sup&&supName(S,r.sup)?esc(supName(S,r.sup)):'<span class="neg">à renseigner</span>'}</b></div>
-    ${r.src&&r.src.type==='ia'?`<div class="row"><span class="meta">Fiche</span><b>lue par l’IA le ${fdate(r.src.d)}, vérifiée</b></div>`:''}
+    ${r.src&&r.src.type==='ia'?`<div class="row"><span class="meta">Fiche</span><b>lue par l’IA le ${fdate(r.src.d)}${r.src.deduit?', en partie déduite du modèle':''}, vérifiée</b></div>`:''}
     <div class="row"><span class="meta">Seuil d'alerte</span><b>${r.min}</b></div>
     <div class="row"><span class="meta">Vendus depuis le début</span><b>${sold.reduce((a,x)=>a+x.lines.filter(l=>l.ref===id).reduce((c,l)=>c+l.qty,0),0)}</b></div>
     <div class="row"><span class="meta">Dernière vente</span><b>${sold.length?fdate(sold[sold.length-1].date):'aucune'}</b></div></div>`}
@@ -1125,7 +1136,8 @@ const acts={
   <div class="card"><div class="name">Lire la fiche avec l’IA</div>
    <div class="meta">Photographiez la fiche technique, le carton ou la page du catalogue : la marque, le modèle et les caractéristiques se remplissent seuls. Vous vérifiez avant d’enregistrer.</div>
    ${online()?`<div class="acts"><button class="btn primary" type="button" data-act="fiche" data-id="cam">Prendre en photo</button><button class="btn" type="button" data-act="fiche" data-id="img">Choisir une image</button></div>`
-    :`<div class="meta">Disponible avec un compte en ligne : Réglages, Compte en ligne.</div>`}</div>
+    :`<div class="meta"><b>Il faut un compte en ligne.</b> Créez-le ou connectez-vous, puis mettez le magasin en ligne dans Réglages.</div>
+     <div class="acts"><button class="btn primary" type="button" data-act="signup">Créer un compte</button><button class="btn" type="button" data-act="login">Se connecter</button></div>`}</div>
   <div class="acts"><button class="btn" type="button" data-act="add-stock-main">Saisir à la main</button>${closeBtn}</div>`)},
  'add-stock-main'(_,_b,pre){sheet('Nouvel article',artFields(pre),
   d=>{const r=artSave(d);showArt(r.id)},d=>artCheck(d))},
@@ -1376,7 +1388,7 @@ async function pullAll(){let got=[],page;
   /* public rows first, then the cost parts that complete them */
   rows.sort((a,b)=>a.c.endsWith('$')-b.c.endsWith('$'));
   for(const r of rows){if(dirty(r.key))continue;applyRow(S,r)}
-  repairReceptions(S);fixCounters(S);if(canCost())fillCosts(S);
+  repairReceptions(S);relinkUnits(S);fixCounters(S);if(canCost())fillCosts(S);
   const after=toRows(S,canCost());
   for(const r of rows){if(dirty(r.key))continue;const a=after.get(r.key);if(r.del||!a)delete link.h[r.key];else link.h[r.key]=hashOf(a.d)}
   return got.length}
@@ -1467,7 +1479,7 @@ function jpeg(img,max,q,box){const sx=box?box.x:0,sy=box?box.y:0,sw=box?box.w:im
 /* the product's own picture, cut out of the sheet with a small margin */
 function cutOut(img,p){if(!p||!p.presente||p.l<.05||p.h<.05)return '';const W=img.naturalWidth,H=img.naturalHeight,m=.03;
   const x=Math.max(0,(p.x-m)*W),y=Math.max(0,(p.y-m)*H),w=Math.min(W-x,(p.l+2*m)*W),h=Math.min(H-y,(p.h+2*m)*H);
-  return w>20&&h>20?jpeg(img,600,.85,{x,y,w,h}):''}
+  return w>20&&h>20?jpeg(img,360,.85,{x,y,w,h}):''}
 async function readSheet(file){let img;
   try{img=await loadImg(file)}catch(e){return say(esc(e.message))}
   const small=jpeg(img,320,.7);
@@ -1486,10 +1498,12 @@ async function readSheet(file){let img;
   if(same)return panel(`<h2>Déjà dans votre stock</h2><p>${esc(full(same))} existe déjà.</p><div class="acts"><button class="btn primary" type="button" data-act="art" data-id="${same.id}">Ouvrir sa fiche</button>${closeBtn}</div>`);
   const spec={};Object.keys(SPEC).forEach(k=>{if(f[k])spec[k]=f[k]});
   const b={brand:f.brand,name:f.name,ref:f.ref,kind:f.kind,spec,war:f.war!=null&&WAR[f.war]!==undefined?f.war:12,sup:''};
-  const doubt=new Set(f.incertain||[]),pic=cutOut(img,f.photo),src=jpeg(img,900,.7);
-  sheet('Vérifiez la fiche lue par l’IA',artFields(b).map(x=>doubt.has(x.k)?{...x,l:x.l+' · à vérifier'}:x),
-   d=>{const r=artSave(d);r.img=pic;r.src={type:'ia',d:plus(0),img:src};showArt(r.id)},d=>artCheck(d));
-  $('#form h2').insertAdjacentHTML('afterend',`<div class="card ${doubt.size?'warn':'ok'}"><div class="row">${pic?`<img class="thumb big" src="${pic}" alt="">`:''}<div class="meta">${esc(f.remarque||'')}${doubt.size?'<br><b>'+doubt.size+' champ'+(doubt.size>1?'s':'')+' à vérifier</b>, marqué'+(doubt.size>1?'s':'')+' ci-dessous.':''}<br>Ajoutez le prix de vente, puis enregistrez.</div></div></div>`);
+  /* read on the photo, or inferred from the model: the shopkeeper must see which is which */
+  const guess=new Set((f.deduit||[]).filter(k=>f[k])),doubt=new Set((f.incertain||[]).filter(k=>!guess.has(k)));
+  const pic=cutOut(img,f.photo),src=jpeg(img,700,.6),n=guess.size+doubt.size;
+  sheet('Vérifiez la fiche lue par l’IA',artFields(b).map(x=>guess.has(x.k)?{...x,l:x.l+' · déduit du modèle, à vérifier'}:doubt.has(x.k)?{...x,l:x.l+' · à vérifier'}:x),
+   d=>{const r=artSave(d);r.img=pic;r.src={type:'ia',d:plus(0),img:src,...(guess.size?{deduit:[...guess]}:{})};showArt(r.id)},d=>artCheck(d));
+  $('#form h2').insertAdjacentHTML('afterend',`<div class="card ${n?'warn':'ok'}"><div class="row">${pic?`<img class="thumb big" src="${pic}" alt="">`:''}<div class="meta">${esc(f.remarque||'')}${guess.size?'<br><b>'+guess.size+' caractéristique'+(guess.size>1?'s':'')+' déduite'+(guess.size>1?'s':'')+' du modèle</b>, pas lue'+(guess.size>1?'s':'')+' sur la photo.':''}${doubt.size?'<br><b>'+doubt.size+' champ'+(doubt.size>1?'s':'')+' à vérifier.</b>':''}<br>Ajoutez le prix de vente, puis enregistrez.</div></div></div>`);
   const pr=$('#f-price');if(pr)pr.focus()}
 ['cam','img'].forEach(k=>$('#fiche-'+k).addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(f)readSheet(f)}));
 acts.fiche=k=>{closeSheet();if(!online())return say('Connectez-vous dans Réglages, Compte en ligne, pour utiliser la lecture par IA.');$('#fiche-'+(k==='img'?'img':'cam')).click()};

@@ -36,6 +36,8 @@ let fails=0;const ok=(c,m)=>{console.log((c?'OK   ':'ÉCHEC ')+m);if(!c)fails++}
     const t0=Date.now();await chooser.setFiles(IMG);
     await page.waitForFunction(()=>/Vérifiez la fiche|Lecture impossible|Fiche illisible|Déjà dans/.test(document.querySelector('#sheet').textContent),null,{timeout:60000});
     const secs=((Date.now()-t0)/1000).toFixed(1);
+    if(/Déjà dans/.test(await sheet())){console.log('     « Déjà dans votre stock » : ce modèle existe dans le magasin d’exemple, aucun doublon créé.');
+      ok(true,'doublon évité');throw new Error('fin : prenez une fiche d’un modèle absent des exemples pour tester la suite')}
     ok(/Vérifiez la fiche/.test(await sheet()),'fiche lue par l’IA en '+secs+' s');
     const v=await page.evaluate(()=>Object.fromEntries([...document.querySelectorAll('#form input,#form select')].map(i=>[i.name,i.value])));
     console.log('     lu : '+[v.brand,v.name,v.ref,v.moteur,v.batterie,v.autonomie,v.vitesse].join(' · '));

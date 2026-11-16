@@ -66,3 +66,16 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
 - **Une ligne refusée par le serveur et jamais envoyée était effacée du
   téléphone.** Elle reste maintenant sur le téléphone, avec le message de
   refus dans Réglages.
+- **Les ventes du magasin d'exemple pointaient vers des trottinettes qui
+  n'existaient plus** : à sa création, Tanja Trott renommait ses trottinettes
+  sans mettre à jour les lignes de tickets. Un retour sur une vente d'exemple
+  laissait la trottinette « vendue ». Trouvé par `test/logique.js`. Corrigé, et
+  `relinkUnits` répare les téléphones qui ont déjà ces exemples.
+- **La mémoire du téléphone pleine faisait perdre des données sans rien
+  dire.** Elle est limitée à environ 5 Mo, et les photos d'articles y sont
+  rangées. Un message prévient maintenant. Ranger les photos dans le stockage
+  Supabase reste à faire.
+- **Un premier verrou serveur bloquait tout envoi** : la fonction qu'il
+  appelait n'était pas autorisée pour les comptes connectés. Trouvé par un
+  essai direct avant publication. Tout nouveau verrou s'essaie en compte
+  patron et en compte vendeur, en cas accepté et en cas refusé.

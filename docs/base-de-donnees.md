@@ -91,6 +91,10 @@ une ligne : `magasin_id`, `collection`, `cle` (l'identifiant de l'élément),
 - **Réceptions** : une réception (`buys`) datée à partir du 16 novembre 2026
   porte un fournisseur, ou la marque « stock de départ » (`initial`). Les
   anciennes et les réparées (`dateIncertaine`) sont acceptées.
+- **Verrous de caisse** : seul le patron change les réglages du magasin (nom,
+  facturation, remise maximale, délai de retour) ; un ticket ou une écriture du
+  journal ne se supprime jamais ; les montants d'un ticket ne changent plus
+  après l'encaissement, même pour le patron.
 - **Suppressions** : un élément se marque supprimé, il ne disparaît pas de la
   base. Seul le patron supprime un article ou un fournisseur.
 
@@ -110,7 +114,10 @@ magasin, avec le jeton de la personne connectée. La fonction :
 1. vérifie que la personne est patron ou vendeur de ce magasin ;
 2. refuse au-delà de 60 analyses par magasin sur 24 heures ;
 3. demande la fiche à Claude Opus 5.5 (effort faible, réponse au format JSON
-   imposé, repli automatique sur un autre modèle en cas de refus) ;
+   imposé, repli automatique sur un autre modèle en cas de refus). Ce qui est
+   lu sur la photo est la source ; une caractéristique absente peut être
+   déduite du modèle quand il est identifié sans ambiguïté, et elle est alors
+   marquée « déduit du modèle » dans l'application ;
 4. note chaque analyse dans la table `analyses` (modèle, jetons, erreur),
    lisible par le patron et le comptable.
 

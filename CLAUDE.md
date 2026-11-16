@@ -17,6 +17,8 @@ interface. Pas d'étape de compilation, pas de dépendances à installer.
 | `test/smoke.js` | Test de bout en bout dans un vrai navigateur |
 | `test/sync.js` | Test de la synchronisation : trois téléphones simulés contre la vraie base |
 | `test/fiche.js` | Test de l'article par photo : vraie IA, vraie base (environ 0,2 DH par passage) |
+| `test/logique.js` | Des milliers d'opérations au hasard sur la logique métier, règles vérifiées après chacune |
+| `test/qa.js` | Clique chaque bouton de chaque écran, en patron et en vendeur, et cherche erreurs et incohérences |
 | `supabase/migrations/` | Schéma de la base Supabase, une migration par étape |
 | `supabase/functions/analyser-fiche/` | Fonction serveur qui lit une fiche produit avec l'IA |
 | `README.md` | Mise en ligne, APK, reprise du code |
@@ -65,6 +67,9 @@ node test/smoke.js
 Charge `index.html` dans Chrome, scanne un article, un fournisseur, un lien et
 un code inconnu, puis parcourt les quinze écrans. Nécessite `playwright` et un
 Chrome local ; sans eux, le script le dit et sort sans échouer.
+
+Lancer aussi `node test/logique.js` (quelques secondes). `node test/qa.js`
+(une vingtaine de minutes) après un changement d'interface.
 
 Si la synchronisation a changé, lancer aussi `test/sync.js` avec les comptes de
 test (voir `docs/base-de-donnees.md`), puis supprimer le magasin qu'il crée.

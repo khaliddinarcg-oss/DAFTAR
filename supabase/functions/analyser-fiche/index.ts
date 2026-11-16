@@ -27,7 +27,7 @@ const SCHEMA = {
   type: "object",
   additionalProperties: false,
   required: ["lisible", "kind", "brand", "name", "ref", "war", "moteur", "batterie", "autonomie",
-    "vitesse", "roues", "poids", "charge", "incertain", "photo", "remarque"],
+    "vitesse", "roues", "poids", "charge", "incertain", "deduit", "photo", "remarque"],
   properties: {
     lisible: { type: "boolean" },
     kind: { type: "string", enum: ["t", "p"] },
@@ -37,6 +37,8 @@ const SCHEMA = {
     roues: texte, poids: texte, charge: texte,
     incertain: { type: "array", items: { type: "string", enum: ["brand", "name", "ref", "kind", "war",
       "moteur", "batterie", "autonomie", "vitesse", "roues", "poids", "charge"] } },
+    deduit: { type: "array", items: { type: "string", enum: ["moteur", "batterie", "autonomie",
+      "vitesse", "roues", "poids", "charge"] } },
     photo: {
       type: "object", additionalProperties: false, required: ["presente", "x", "y", "l", "h"],
       properties: { presente: { type: "boolean" }, x: { type: "number" }, y: { type: "number" },
@@ -46,12 +48,17 @@ const SCHEMA = {
   },
 };
 
-const CONSIGNE = `Tu lis la photo d'une fiche technique, d'un carton ou d'une page de catalogue
-d'un magasin de trottinettes électriques au Maroc, et tu remplis la fiche d'identité de l'article.
+const CONSIGNE = `Tu lis la photo d'une fiche technique, d'un carton, d'une page ou d'une couverture
+de catalogue d'un magasin de trottinettes électriques au Maroc, et tu remplis la fiche d'identité
+de l'article.
 
 Règles :
-- N'écris que ce qui est lisible sur la photo. Si une information n'y est pas, laisse "".
-  N'invente jamais une caractéristique d'après le nom du modèle.
+- Lis d'abord ce qui est écrit sur la photo : c'est la source qui compte.
+- Une caractéristique absente de la photo : si la marque et le modèle exact sont identifiés sans
+  ambiguïté et que tu connais les caractéristiques publiées par le constructeur pour ce modèle,
+  donne la valeur et mets le nom du champ dans deduit. Si tu hésites entre deux versions du
+  modèle (Pro, Max, Plus, année…), ou si tu ne connais pas le modèle, laisse "" : une case vide
+  vaut mieux qu'une valeur fausse. Ne déduis jamais ref ni war.
 - kind : "t" pour une trottinette, "p" pour une pièce ou un accessoire.
 - brand : la marque (Xiaomi, Segway-Ninebot, Kukirin, Kugoo, Dualtron…). name : le modèle seul,
   sans la marque (« 4 Lite », « Max G2 », « G2 Master »). ref : la référence ou le code produit s'il
@@ -66,8 +73,10 @@ Règles :
 - photo : si l'image montre le produit lui-même (dessin ou photo de la trottinette ou de
   l'accessoire), donne le cadre qui l'entoure en fractions de l'image, x et y du coin haut gauche,
   l et h la largeur et la hauteur, entre 0 et 1. Sinon presente=false et des 0.
-- lisible=false si l'image ne montre pas de fiche produit exploitable.
-- remarque : une phrase courte en français pour le commerçant, par exemple ce qui manque.`;
+- lisible=true dès que la marque et le modèle sont identifiables (fiche, carton, couverture de
+  catalogue, photo de la trottinette avec son nom). lisible=false sinon.
+- remarque : une phrase courte en français pour le commerçant : ce qui a été lu, ce qui a été
+  déduit du modèle, ce qui manque.`;
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: CORS });
