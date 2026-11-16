@@ -32,6 +32,9 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
 | Article par photo de la fiche avant la recherche par nom | L'IA lit ce qui est écrit au lieu de deviner ; le commerçant vérifie toujours. Opus 5.5 en effort faible : environ 0,2 DH la fiche, mesuré |
 | La lecture par IA passe par une fonction du serveur | La clé de l'IA ne doit jamais être dans l'application ; le serveur vérifie aussi l'appartenance au magasin et plafonne à 60 analyses par jour |
 | Garantie choisie dans une liste fermée, jamais tapée (16 nov. 2026) | Moins d'erreurs de saisie. La liste couvre de 1 à 36 mois : une garantie d'un mois (bon Electro Bike) devenait 12 mois en silence avec l'ancienne liste |
+| Trottinettes, vélos, scooters et motos électriques (16 nov. 2026) | Le même commerçant vend souvent les quatre. Tout ce qui n'est pas une pièce est un véhicule, suivi par numéro de série ; aucune logique ne dépend du type de véhicule |
+| Facture sur le modèle du bon d'un revendeur de Tanger (Electro Bike) | C'est ce que les clients connaissent : en-tête au logo, cadre client, tableau quadrillé, total surligné, pied de page aux coordonnées. Les mentions légales marocaines qu'il n'avait pas sont gardées : ICE, IF, RC, patente, montant en lettres, TVA |
+| Une facture garde la TVA de son émission | Changer le taux dans les réglages ne modifie jamais une facture déjà faite |
 
 ## Erreurs commises, pour ne pas les refaire
 

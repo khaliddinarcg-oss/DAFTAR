@@ -34,7 +34,7 @@ const SCHEMA = {
     "vitesse", "roues", "poids", "charge", "incertain", "deduit", "photo", "remarque"],
   properties: {
     lisible: { type: "boolean" },
-    kind: { type: "string", enum: ["t", "p"] },
+    kind: { type: "string", enum: ["t", "v", "s", "m", "p"] },
     brand: texte, name: texte, ref: texte,
     war: { anyOf: [{ type: "integer" }, { type: "null" }] },
     moteur: texte, batterie: texte, autonomie: texte, vitesse: texte,
@@ -70,7 +70,7 @@ const SCHEMA_ACHAT = {
       items: {
         type: "object", additionalProperties: false,
         required: ["designation", "marque", "modele", "kind", "quantite", "prix_unitaire", "total"],
-        properties: { designation: texte, marque: texte, modele: texte, kind: { type: "string", enum: ["t", "p"] },
+        properties: { designation: texte, marque: texte, modele: texte, kind: { type: "string", enum: ["t", "v", "s", "m", "p"] },
           quantite: nombre, prix_unitaire: nombre, total: nombre },
       },
     },
@@ -81,8 +81,8 @@ const SCHEMA_ACHAT = {
 };
 
 const CONSIGNE_ACHAT = `Tu lis la photo d'un bon d'achat, d'un bon de livraison ou d'une facture qu'un
-FOURNISSEUR a remis à un magasin de trottinettes électriques au Maroc. Le magasin veut enregistrer
-la réception de cette marchandise.
+FOURNISSEUR a remis à un magasin de trottinettes, vélos, scooters et motos électriques au Maroc.
+Le magasin veut enregistrer la réception de cette marchandise.
 
 Règles :
 - Le document contient aussi les coordonnées du client (nom, CIN ou pièce d'identité, téléphone,
@@ -97,7 +97,8 @@ Règles :
 - lignes : une ligne par article acheté, en ignorant les lignes vides, les lignes de texte
   (conditions, garantie) et les totaux. designation : le texte tel qu'écrit. marque et modele :
   séparés si possible (« Trottinette électrique XTREME F1 » → marque "", modele "Xtreme F1" ; une
-  marque connue comme Xiaomi va dans marque). kind : "t" trottinette, "p" pièce ou accessoire.
+  marque connue comme Xiaomi va dans marque). kind : "t" trottinette, "v" vélo électrique,
+  "s" scooter électrique, "m" moto électrique, "p" pièce ou accessoire.
   quantite : entier. prix_unitaire et total : en dirhams entiers, le montant que le magasin paie
   (si le document donne HT et TTC, prends le TTC ; s'il ne donne que HT, prends le HT et mets
   "prix" dans incertain).
@@ -107,8 +108,8 @@ Règles :
 - remarque : une phrase courte en français pour le commerçant (sans aucune donnée du client).`;
 
 const CONSIGNE = `Tu lis la photo d'une fiche technique, d'un carton, d'une page ou d'une couverture
-de catalogue d'un magasin de trottinettes électriques au Maroc, et tu remplis la fiche d'identité
-de l'article.
+de catalogue d'un magasin de trottinettes, vélos, scooters et motos électriques au Maroc, et tu
+remplis la fiche d'identité de l'article.
 
 Règles :
 - Lis d'abord ce qui est écrit sur la photo : c'est la source qui compte.
@@ -120,10 +121,11 @@ Règles :
 - Marque et modèle reconnus seulement à l'apparence du produit (forme, couleurs, logo sans le nom
   du modèle écrit) : mets brand et name dans incertain, et dis-le dans la remarque (« reconnu à
   l'apparence, pas lu »). Si plusieurs modèles ou générations se ressemblent, laisse name vide.
-- kind : "t" pour une trottinette, "p" pour une pièce ou un accessoire.
-- brand : la marque (Xiaomi, Segway-Ninebot, Kukirin, Kugoo, Dualtron…). name : le modèle seul,
-  sans la marque (« 4 Lite », « Max G2 », « G2 Master »). ref : la référence ou le code produit s'il
-  est imprimé, sinon "".
+- kind : "t" trottinette, "v" vélo électrique, "s" scooter électrique, "m" moto électrique,
+  "p" pièce ou accessoire.
+- brand : la marque (Xiaomi, Segway-Ninebot, Kukirin, Kugoo, Dualtron, Niu, Yadea, Super Soco…).
+  name : le modèle seul, sans la marque (« 4 Lite », « Max G2 », « G2 Master »).
+  ref : la référence ou le code produit s'il est imprimé, sinon "".
 - war : la garantie en mois si elle est écrite, sinon null.
 - Formats, en français, virgule décimale, comme ces exemples :
   moteur "350 W" ou "2 × 1000 W" ; batterie "36 V · 10,4 Ah" ; autonomie "30 km" ;
@@ -131,11 +133,11 @@ Règles :
   Convertis les unités anglo-saxonnes (mph, lbs, miles) et signale-les dans incertain.
 - incertain : les champs que tu as remplis sans être sûr (texte flou, deux valeurs possibles,
   conversion d'unité).
-- photo : si l'image montre le produit lui-même (dessin ou photo de la trottinette ou de
+- photo : si l'image montre le produit lui-même (dessin ou photo du véhicule ou de
   l'accessoire), donne le cadre qui l'entoure en fractions de l'image, x et y du coin haut gauche,
   l et h la largeur et la hauteur, entre 0 et 1. Sinon presente=false et des 0.
 - lisible=true dès que la marque et le modèle sont identifiables (fiche, carton, couverture de
-  catalogue, photo de la trottinette avec son nom). lisible=false sinon.
+  catalogue, photo du véhicule avec son nom). lisible=false sinon.
 - remarque : une phrase courte en français pour le commerçant : ce qui a été lu, ce qui a été
   déduit du modèle, ce qui manque.`;
 
