@@ -42,6 +42,7 @@ Ce qui a été tranché, et pourquoi. À lire avant de rouvrir un de ces sujets.
 | Caisse visuelle, comme dans un restaurant (17 nov. 2026) | Beaucoup de vendeurs lisent mal le français. Une couleur et une icône par catégorie, une photo par article, un toucher pour ajouter, le panier toujours en bas. L'écran des catégories compte 10 mots, l'ancien écran de vente 114 |
 | Français et arabe ensemble sur la caisse | Demandé par le patron. Les mots arabes (تروتينيت، بيكالة، موطور، كريدي، خلّص…) sont à faire valider par des commerçants |
 | Accessoires séparés des pièces détachées | Casque, antivol, chargeur d'un côté ; chambre à air, frein, pneu de l'autre. Les véhicules sont listés explicitement (`VEH`) au lieu de « tout ce qui n'est pas une pièce » |
+| Style « registre », sobre et lisible (17 nov. 2026) | Avis d'un designer : l'ancien style (fond noir, italique, majuscules, coins coupés, lumières) faisait jeu vidéo, pas outil de gestion. Trois propositions montrées ; le patron a choisi « registre » : fond crème, bandeau bleu nuit, cartes blanches, titres à empattements, police du téléphone (plus de police téléchargée). La couleur ne sert qu'à signaler : vert = argent reçu, rouge = retard, ambre = à surveiller ; les boutons d'action sont bleu nuit. Grandes cases dans la caisse, et rien de touchable sous 44 pixels, boutons de 48, champs de 50, barre du bas avec icônes |
 
 ## Erreurs commises, pour ne pas les refaire
 
