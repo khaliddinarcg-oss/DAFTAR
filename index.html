@@ -263,6 +263,30 @@ h1 span{overflow-wrap:anywhere}
 .inv-foot img{max-height:34px;max-width:160px;object-fit:contain}
 .inv-foot .inv-fshop{font-weight:700;color:var(--ac);font-size:14px;text-transform:uppercase;letter-spacing:.04em}
 .inv-ids{font-size:10px;color:#555d65}
+/* the A4 invoice (and credit note): sober, two columns at the top, legal mentions at the bottom */
+.iv{font-family:Arial,Helvetica,sans-serif;font-variant-numeric:normal;color:#1a1d21;font-size:11.5px;line-height:1.45;gap:16px;padding:0 0 18px;border-top:6px solid var(--ac)}
+.iv.a4page{min-height:1157px}
+.sheet .iv{min-height:1157px;flex:none;box-shadow:0 1px 6px rgba(0,0,0,.18)}
+.iv-top{display:flex;justify-content:space-between;gap:18px;padding:18px 24px 0;flex-wrap:wrap}
+.iv-from{display:flex;flex-direction:column;gap:2px;max-width:60%}.iv-logo{max-height:64px;max-width:200px;object-fit:contain;align-self:flex-start;margin-bottom:6px}
+.iv-shop{font-size:20px;font-weight:700;color:var(--ac);letter-spacing:.01em}.iv-slogan{font-size:11.5px;color:#4b5563;font-style:italic}.iv-ad{font-size:11px;color:#4b5563;margin-top:4px}
+.iv-title{text-align:right;margin-left:auto}.iv-kind{font-size:28px;font-weight:300;letter-spacing:.18em;text-transform:uppercase;color:#1a1d21;line-height:1}
+.iv-meta{border-collapse:collapse;margin:10px 0 0 auto;font-size:11.5px}.iv-meta td{padding:2px 0 2px 14px;text-align:right;white-space:nowrap}.iv-meta td:first-child{color:#6b7280}.iv-meta td:last-child{font-weight:700}
+.iv-parties{display:grid;grid-template-columns:1fr 1fr;gap:14px;padding:0 24px}
+.iv-box{border:1px solid #d9dde2;border-radius:4px;padding:10px 12px;display:flex;flex-direction:column;gap:1px}.iv-box b{font-size:13px;margin-bottom:2px}
+.iv-to{background:#f7f8fa}.iv-miss{color:#b91c1c}
+.iv-lbl{font-size:9.5px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:#6b7280;margin-bottom:3px}
+.iv-t{width:calc(100% - 48px);margin:0 24px;border-collapse:collapse}
+.iv-t thead tr{background:var(--ac)}.iv-t th{color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:7px 10px;text-align:left}
+.iv-t td{padding:8px 10px;border-bottom:1px solid #e5e7eb;vertical-align:top}.iv-t tbody tr:nth-child(even) td{background:#f7f8fa}
+.iv-t .c{text-align:center}.iv-t .r{text-align:right;white-space:nowrap}.iv-n{color:#6b7280;width:28px}.iv-sub{font-size:10.5px;color:#6b7280;margin-top:1px}
+.iv-sum{display:flex;justify-content:space-between;align-items:flex-start;gap:18px;padding:0 24px;flex-wrap:wrap}
+.iv-words{flex:1 1 220px;border-left:3px solid var(--ac);padding:4px 0 4px 10px}.iv-words b{font-size:12px}
+.iv-tot{border-collapse:collapse;min-width:240px}.iv-tot td{padding:6px 10px;border-bottom:1px solid #e5e7eb}.iv-tot .r{text-align:right;white-space:nowrap;font-weight:600}
+.iv-ttc{background:var(--ac)}.iv-ttc td{color:#fff;font-weight:700;font-size:14px;border:0}
+.iv-end{display:flex;justify-content:space-between;gap:18px;padding:0 24px;flex-wrap:wrap}.iv-notes{flex:1 1 240px;display:flex;flex-direction:column;gap:8px;font-size:10.5px;color:#374151}
+.iv-sign{width:220px;height:96px;border:1px dashed #b8bec6;border-radius:4px;padding:8px 10px}
+.iv-foot{margin-top:auto;border-top:1px solid #d9dde2;padding:10px 24px 0;text-align:center;font-size:9.5px;color:#6b7280;line-height:1.6}.iv-foot b{color:#1a1d21}
 .code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;overflow-wrap:anywhere;color:var(--ink);background:var(--raised);padding:8px;border-radius:4px;margin-top:4px}
 .cam{position:relative;background:#000;border-radius:8px;overflow:hidden}
 .cam video{width:100%;max-height:58vh;display:block;object-fit:cover}
@@ -1033,12 +1057,14 @@ const printBar=()=>SOLO
 /* An A4 page is drawn off screen at the width of a real page (794 px = 210 mm at 96 dpi), whatever
    the phone's width: otherwise the PDF of a phone screen is a narrow strip in the middle of the page. */
 const A4PX=794;
+/* an A4 page on a phone: shown whole, scaled down, exactly as it will print */
+function fitPaper(){const n=$('#paper.iv');if(!n)return;n.style.width=A4PX+'px';const P=n.parentElement,cs=getComputedStyle(P),w=P.clientWidth-parseFloat(cs.paddingLeft)-parseFloat(cs.paddingRight);n.style.zoom=Math.min(1,(w>0?w:A4PX)/A4PX)}
 async function shoot(){const node=$('#paper');
   if(!node)return null;
   if(!window.html2canvas){say("L'outil d'impression n'a pas pu se charger. Vérifiez la connexion et rechargez la page.");return null}
   const a4=paper&&paper.fmt==='a4';let box=null,target=node;
   if(a4){box=document.createElement('div');box.style.cssText='position:fixed;left:-20000px;top:0;width:'+A4PX+'px;background:#fff';
-    target=node.cloneNode(true);box.appendChild(target);document.body.appendChild(box)}
+    target=node.cloneNode(true);target.classList.add('a4page');target.style.zoom='1';box.appendChild(target);document.body.appendChild(box)}
   try{return await html2canvas(target,{scale:a4?2:3,backgroundColor:'#ffffff',logging:false,...(a4?{windowWidth:A4PX}:{})})}
   catch(e){say("La page n'a pas pu être transformée en image.");return null}
   finally{if(box)box.remove()}}
@@ -1097,34 +1123,29 @@ function showDoc(fno){const f=S.invoices.find(x=>x.no===fno);if(!f)return say('D
   const ht=v=>tva?v/(1+tva/100):v;
   const sht=ht(f.total)*sg,stva=f.total*sg-sht;
   const ids=[I.ice&&'ICE : '+I.ice,I.ifi&&'IF : '+I.ifi,I.tp&&'TP : '+I.tp,I.rc&&'RC : '+I.rc].filter(Boolean).map(esc).join(' · ');
-  /* modelled on the purchase document of a Tangier dealer, with the Moroccan legal mentions it lacked */
-  const soft=mixWhite(invColor(),.62),lines=(f.lines||[]).map((l,i)=>({...l,war:l.war??(t&&t.lines[i]&&t.lines[i].war)??0}));
-  const wars=lines.filter(l=>l.war>0).length,rows=[];
-  lines.forEach(l=>{rows.push(`<tr><td>${esc(l.model)}${l.serial?`<div class="isub">N° de série : ${esc(l.serial)}</div>`:''}${l.war>0?`<div class="isub">${esc(warLabel(l.war))} de garantie</div>`:''}</td><td class="c">${l.qty}</td><td class="r">${m2(ht(l.price)*sg)}</td><td class="r">${m2(ht(l.total)*sg)}</td></tr>`)});
-  if(wars&&I.garCond)rows.push(`<tr><td class="isub">${esc(I.garCond)}</td><td></td><td></td><td></td></tr>`);
-  while(rows.length<8)rows.push('<tr><td></td><td></td><td></td><td></td></tr>');
-  const contact=[I.addr&&'Adresse : '+esc(I.addr),I.tel&&'Tél. / WhatsApp : '+esc(I.tel)].filter(Boolean).join(' · ');
-  const web=[I.site&&'Site : '+esc(I.site),I.social&&'Réseaux : '+esc(I.social)].filter(Boolean).join(' · ');
-  panel(`<div class="inv" id="paper" style="--ac:${esc(invColor())}">
-   <div class="inv-head">${I.logo?`<img class="inv-logo" src="${esc(I.logo)}" alt="">`:''}<div class="inv-shop">${esc(S.shop)}</div>${I.slogan?`<div class="inv-slogan">${esc(I.slogan)}</div>`:''}</div>
-   <div class="inv-kind">${av?'AVOIR':'FACTURE'}</div>
-   <div class="inv-to"><div class="inv-to-lbl">${av?'Avoir établi au profit de :':'Coordonnées client :'}</div>
-    <div class="inv-to-box">${esc(f.name)}${f.addr?`<br>${esc(f.addr)}`:''}<br>${f.ice?'ICE : '+esc(f.ice):(f.kind==='b2b'?'Entreprise':'Particulier')}${t&&t.phone?`<br>${esc(t.phone)}`:''}</div></div>
-   <table class="inv-grid"><tr><th>Date</th><th>${av?'Avoir':'Facture'} N°</th><th>Ticket N°</th><th>${av?'Annule la facture':'Mode de règlement'}</th></tr>
-    <tr><td>${new Date(f.date+'T00:00:00').toLocaleDateString('fr-FR')}</td><td>${esc(f.no)}</td><td>${esc(f.ticket)}</td><td>${av?esc(f.of):PAY[f.pay]}</td></tr></table>
-   <table class="inv-t"><thead><tr><th>Désignations</th><th>Quantités</th><th>Prix unitaire${tva?' HT':''}</th><th>Total${tva?' HT':''}</th></tr></thead>
-    <tbody>${rows.join('')}</tbody>
-    <tfoot><tr><td class="c">TOTAL</td><td class="c">${lines.reduce((a,l)=>a+l.qty,0)}</td><td></td><td class="r" style="background:${soft}">${m2(sht)}${tva?'':' DH'}</td></tr></tfoot></table>
-   <div class="inv-sum"><div class="inv-words"><div class="inv-lbl">Arrêté${av?'':'e'} la présente ${av?'note d’avoir':'facture'} à la somme de</div>${esc(amountWords(Math.abs(f.total)))}${av?' (en déduction)':''}</div>
-    <table class="inv-tot"><tr><td>Total ${tva?'HT':''}</td><td class="r">${m2(sht)}</td></tr>
-     ${tva?`<tr><td>TVA ${tva} %</td><td class="r">${m2(stva)}</td></tr>`:'<tr><td>TVA</td><td class="r">non applicable</td></tr>'}
-     <tr class="inv-ttc"><td>Total ${tva?'TTC':'à payer'}</td><td class="r">${m2(f.total*sg)} DH</td></tr></table></div>
-   <div class="inv-sign"><div>Cachet et visa du gérant</div></div>
-   <div class="inv-foot">${I.logo?`<img src="${esc(I.logo)}" alt="">`:''}<div class="inv-fshop">${esc(S.shop)}</div>${I.slogan?`<div>${esc(I.slogan)}</div>`:''}
-    ${contact?`<div>${contact}</div>`:''}${web?`<div>${web}</div>`:''}
-    ${ids?`<div class="inv-ids">${ids}</div>`:''}${I.rib?`<div class="inv-ids">RIB : ${esc(I.rib)}</div>`:''}${I.foot?`<div class="inv-ids">${esc(I.foot)}</div>`:''}</div></div>
+  /* a professional A4 invoice: issuer and client side by side, numbered lines, totals box, legal mentions in the footer */
+  const lines=(f.lines||[]).map((l,i)=>({...l,war:l.war??(t&&t.lines[i]&&t.lines[i].war)??0}));
+  const wars=lines.filter(l=>l.war>0).length;
+  const rows=lines.map((l,i)=>`<tr><td class="c iv-n">${i+1}</td><td><b>${esc(l.model)}</b>${l.serial?`<div class="iv-sub">N° de série : ${esc(l.serial)}</div>`:''}${l.war>0?`<div class="iv-sub">Garantie : ${esc(warLabel(l.war))}</div>`:''}</td><td class="c">${l.qty}</td><td class="r">${m2(ht(l.price)*sg)}</td><td class="r">${m2(ht(l.total)*sg)}</td></tr>`).join('');
+  const date=d=>new Date(d+'T00:00:00').toLocaleDateString('fr-FR');
+  const meta=[[av?'Avoir N°':'Facture N°',esc(f.no)],['Date',date(f.date)],['Ticket N°',esc(f.ticket)],av?['Annule la facture',esc(f.of)]:['Règlement',PAY[f.pay]]];
+  const idl=[I.ice&&['ICE',I.ice],I.ifi&&['IF',I.ifi],I.rc&&['RC',I.rc],I.tp&&['Patente',I.tp]].filter(Boolean);
+  panel(`<div class="inv iv" id="paper" style="--ac:${esc(invColor())}">
+   <div class="iv-top"><div class="iv-from">${I.logo?`<img class="iv-logo" src="${esc(I.logo)}" alt="">`:''}<div class="iv-shop">${esc(S.shop)}</div>${I.slogan?`<div class="iv-slogan">${esc(I.slogan)}</div>`:''}
+     <div class="iv-ad">${[I.addr&&esc(I.addr),I.tel&&'Tél. / WhatsApp : '+esc(I.tel),I.site&&esc(I.site),I.social&&esc(I.social)].filter(Boolean).join('<br>')}</div></div>
+    <div class="iv-title"><div class="iv-kind">${av?'Avoir':'Facture'}</div><table class="iv-meta">${meta.map(([k,v])=>`<tr><td>${k}</td><td>${v}</td></tr>`).join('')}</table></div></div>
+   <div class="iv-parties"><div class="iv-box"><div class="iv-lbl">Émetteur</div><b>${esc(S.shop)}</b>${idl.map(([k,v])=>`<div>${k} : ${esc(v)}</div>`).join('')||'<div class="iv-miss">Identifiants fiscaux à compléter</div>'}</div>
+    <div class="iv-box iv-to"><div class="iv-lbl">${av?'Avoir établi au profit de':'Facturé à'}</div><b>${esc(f.name)}</b>${f.addr?`<div>${esc(f.addr)}</div>`:''}<div>${f.ice?'ICE : '+esc(f.ice):(f.kind==='b2b'?'Entreprise':'Particulier')}</div>${t&&t.phone?`<div>Tél. : ${esc(t.phone)}</div>`:''}</div></div>
+   <table class="iv-t"><thead><tr><th class="c">N°</th><th>Désignation</th><th class="c">Qté</th><th class="r">Prix unitaire${tva?' HT':''}</th><th class="r">Montant${tva?' HT':''}</th></tr></thead><tbody>${rows}</tbody></table>
+   <div class="iv-sum"><div class="iv-words"><div class="iv-lbl">Arrêté${av?'':'e'} la présente ${av?'note d’avoir':'facture'} à la somme de</div><b>${esc(amountWords(Math.abs(f.total)))}${av?' (en déduction)':''}</b></div>
+    <table class="iv-tot"><tr><td>Total ${tva?'HT':''}</td><td class="r">${m2(sht)}</td></tr>
+     ${tva?`<tr><td>TVA ${tva} %</td><td class="r">${m2(stva)}</td></tr>`:'<tr><td>TVA</td><td class="r">Non applicable</td></tr>'}
+     <tr class="iv-ttc"><td>${tva?'Total TTC':'Net à payer'}</td><td class="r">${m2(f.total*sg)} DH</td></tr></table></div>
+   <div class="iv-end"><div class="iv-notes">${wars&&I.garCond?`<div><div class="iv-lbl">Conditions de garantie</div>${esc(I.garCond)}</div>`:''}${I.rib?`<div><div class="iv-lbl">Règlement par virement</div>RIB : ${esc(I.rib)}</div>`:''}${tva?'':'<div class="iv-sub">TVA non applicable.</div>'}</div>
+    <div class="iv-sign"><div class="iv-lbl">Cachet et signature</div></div></div>
+   <div class="iv-foot"><b>${esc(S.shop)}</b>${[I.addr,I.tel].filter(Boolean).map(x=>' · '+esc(x)).join('')}${idl.length?`<br>${idl.map(([k,v])=>k+' '+esc(v)).join(' · ')}`:''}${I.foot?`<br>${esc(I.foot)}`:''}</div></div>
    ${I.ice?'':'<p class="meta">Votre ICE manque : ajoutez-le dans Réglages, Informations de facturation.</p>'}
-   ${printBar()}<div class="acts">${t&&t.phone?waBtn(t.phone,`${S.shop} · ${av?'Avoir':'Facture'} ${f.no}\n${(f.lines||[]).map(l=>l.model+(l.qty>1?' ×'+l.qty:'')).join('\n')}\nTotal : ${m2(f.total*sg)} DH`,'Texte par WhatsApp'):''}${closeBtn}</div>`)}
+   ${printBar()}<div class="acts">${t&&t.phone?waBtn(t.phone,`${S.shop} · ${av?'Avoir':'Facture'} ${f.no}\n${(f.lines||[]).map(l=>l.model+(l.qty>1?' ×'+l.qty:'')).join('\n')}\nTotal : ${m2(f.total*sg)} DH`,'Texte par WhatsApp'):''}${closeBtn}</div>`);fitPaper()}
 
 function showLabels(title,items){paper={name:'etiquettes-qr',fmt:'a4'};panel(`<h2>${title}</h2><div class="labs" id="paper">${items.map(x=>`<div class="lab">${qr(x.code)}<b>${esc(x.name)}</b><span>${esc(x.sub)}</span><span>${dh(x.price)}</span></div>`).join('')}</div>
   <p class="meta">Une étiquette par article, à coller sur le carton ou la potence.</p>${printBar()}<div class="acts">${closeBtn}</div>`)}
