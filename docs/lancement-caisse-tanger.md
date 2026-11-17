@@ -1,203 +1,230 @@
-# Lancement : caisse + matériel à Tanger
+# Lancement : l'équipement complet des commerces à Tanger
 
-Kit de démarrage pour vendre et installer des caisses (logiciel + matériel) aux
-commerces de Tanger. Rédigé le 17 novembre 2026, à partir de l'analyse
-concurrente (`reports/Analyse concurrente caisse Ejahiz.md`).
+Mis à jour le 17 novembre 2026. Ce n'est plus un plan pour vendre Daftar : le
+modèle est maintenant un **écosystème**. Un seul interlocuteur à Tanger pour
+tout ce dont un commerce a besoin. On attire d'abord avec des offres gratuites
+ou peu chères, puis on vend.
 
-Tous les prix de ce document sont des **hypothèses à vérifier** au téléphone et
-sur le terrain. Ne rien promettre à un commerçant qui n'a pas été testé.
-
----
-
-## 0. Trois décisions à prendre avant de commencer
-
-1. **Quel logiciel ?** Daftar convient bien aux commerces qui vendent des objets
-   avec stock, crédit client et garantie : deux-roues, téléphonie, électroménager,
-   informatique, quincaillerie, vêtements. Il ne convient **pas encore** aux
-   cafés et restaurants (pas de tables, pas de bons cuisine). Recommandation :
-   commencer par les boutiques, laisser la restauration pour plus tard.
-2. **Le matériel marche-t-il avec Daftar ?** Aujourd'hui Daftar imprime par
-   l'impression Android du navigateur (`window.print`). L'impression n'a jamais
-   été testée sur un vrai téléphone. **Acheter une seule imprimante et la
-   tester avant d'en commander plusieurs** (voir §2).
-3. **Statut légal.** Pour facturer le matériel aux commerçants (beaucoup
-   demanderont une facture avec ICE), il faut au minimum un statut
-   d'auto-entrepreneur. À régler avant la première vente.
+Tous les prix sont des **hypothèses à vérifier** au téléphone et sur le terrain.
 
 ---
 
-## 1. Plan de lancement sur 4 semaines
+## 0. Le modèle : attirer, installer, revenir chaque mois
 
-| Semaine | Réseaux sociaux | Terrain | Fournisseurs | Objectif mesurable |
+```
+ ACCROCHE (gratuit)  →  ENTRÉE (petite vente)  →  CŒUR (grosse vente)  →  RÉCURRENT (chaque mois)
+ diagnostic gratuit     rouleaux papier           caisse complète          abonnement logiciel
+ essai 14 jours         lecteur code-barres       pack matériel            consommables livrés
+ page Google Maps       étiquettes                pointeuse, caméras       contrat de maintenance
+ offerte                                          TPE, balance             recommandations
+```
+
+L'argent ne vient pas d'une seule vente : il vient de **chaque client
+équipé, qui rachète** (papier, étiquettes, réparations, deuxième poste,
+deuxième magasin) et qui recommande.
+
+### Le catalogue de l'écosystème
+
+| Famille | Produits / services | Pour qui | Rôle |
+| --- | --- | --- | --- |
+| **Caisse** | Logiciel de caisse multi-secteurs, écran tactile ou tablette, imprimante ticket, tiroir, lecteur code-barres | Tous | Cœur |
+| **Consommables** | Rouleaux 58/80 mm, étiquettes, encre | Tous | Récurrent, porte d'entrée |
+| **Restauration** | Imprimante cuisine, gestion des tables, menu QR | Cafés, snacks, restaurants | Cœur |
+| **Épicerie / boucherie** | Balance étiquetteuse, codes-barres poids | Épiceries, superettes | Cœur |
+| **Sécurité / personnel** | Caméras de surveillance, pointeuse biométrique | Tous à partir de 2 employés | Vente additionnelle |
+| **Paiement** | TPE carte via une banque ou un prestataire agréé | Tous | Commission d'apport (à négocier) |
+| **Visibilité** | Fiche Google Maps, WhatsApp Business, page Instagram | Tous | Accroche gratuite |
+| **Service** | Installation, formation, maintenance annuelle, dépannage | Tous | Récurrent |
+
+Ne pas tout lancer en même temps : **caisse + consommables + visibilité**
+d'abord, le reste quand les premiers clients le demandent.
+
+---
+
+## 1. Le choix du logiciel (décision n° 1)
+
+Il faut un logiciel qui marche pour **tous les secteurs**, y compris
+restaurants et cafés, avec l'arabe et le français, et si possible sans
+connexion internet.
+
+| Option | Coût pour vous | Avantages | Risques |
+| --- | --- | --- | --- |
+| **A. Revendeur d'un éditeur marocain** (QuickCom, Caisse212, Sagatec/MaCaisse, Systeme Maroc…) | Commission ou remise revendeur, à négocier | Factures aux normes marocaines (ICE, TVA), assistance en darija, vous ne développez rien | Dépendance à l'éditeur ; marge sur le logiciel faible |
+| **B. Logiciel gratuit international** (type Loyverse) | 0 DH pour le cœur ; options payantes | Accroche « caisse gratuite » très forte ; restaurants + boutiques ; Android | Factures pas forcément conformes à l'article 145 du CGI ; assistance en anglais ; prix des options à vérifier |
+| **C. Odoo** | Licence + intégration | Très complet, multi-magasin | Trop cher pour un petit commerce (15 000 DH et plus) |
+
+**Recommandation** : appeler 3 éditeurs marocains cette semaine pour leur
+programme revendeur (script §3). En parallèle, garder l'option B comme
+**accroche gratuite** pour les tout petits commerces qui ne paieront pas
+d'abonnement : on gagne alors sur le matériel, l'installation et les
+consommables.
+
+---
+
+## 2. Plan de lancement sur 4 semaines
+
+| Semaine | Réseaux sociaux | Terrain | Fournisseurs / partenaires | Objectif |
 | --- | --- | --- | --- | --- |
-| **1** | Créer les comptes Instagram, Facebook, TikTok + WhatsApp Business. 3 posts (§4). | 15 visites « écoute » : ne rien vendre, poser les questions de la fiche (§3). | Appeler 8–10 fournisseurs (§2). Commander **1** imprimante + 1 scanner pour test. | 10 fiches remplies, 8 devis fournisseurs |
-| **2** | 3 posts + 1 vidéo démo (vente en 30 secondes). | 20 visites ciblées sur le type de commerce le plus intéressé en semaine 1. Proposer l'essai gratuit 14 jours. | Tester le matériel avec Daftar. Choisir 2 fournisseurs. | 3 essais gratuits installés |
-| **3** | 3 posts dont 1 témoignage (photo du premier magasin équipé, avec son accord). | Suivre les essais (passage à J+3 et J+10). 20 nouvelles visites. | Négocier prix pour 5 et 10 unités. | 2 essais actifs chaque jour |
-| **4** | Lancer 1 publicité Facebook/Instagram ciblée Tanger (petit budget test, ex. 300–500 DH). | Convertir les essais. Demander à chaque client 2 recommandations. | Premier achat en petite quantité. | **1 à 3 clients payants** |
+| **1** | Créer la marque, les comptes et WhatsApp Business. 3 posts (§5). | 20 visites « diagnostic gratuit » dans 3 secteurs différents. Ne rien vendre. | Appeler 8–10 fournisseurs matériel + 3 éditeurs de logiciel. Commander 1 kit de démonstration. | 20 fiches, 10 devis, 1 accord revendeur en discussion |
+| **2** | 3 posts + 1 vidéo démo. | 25 visites sur le secteur le plus réceptif. Offrir : fiche Google Maps gratuite + essai 14 jours. | Tester le kit de démo de bout en bout (vente, ticket, tiroir, scan). | 5 fiches Google Maps faites, 3 essais installés |
+| **3** | 3 posts dont 1 témoignage. | Suivi des essais à J+3 et J+10. Proposer les rouleaux de papier livrés. | Négocier les prix par 5 et 10 unités. Signer avec 1 éditeur. | 3 clients consommables |
+| **4** | 1 publicité Facebook/Instagram ciblée Tanger (300–500 DH, test). | Convertir les essais. Demander 2 recommandations par client. | Premier achat de stock en petite quantité. | **2 à 4 caisses vendues** |
 
-Règle de la semaine 1 : on écoute plus qu'on ne vend. Ne pas annoncer de prix
-le premier ; demander « combien vous paieriez par mois pour ça ? ».
-
-Tableau de suivi conseillé (un simple Google Sheets) : nom du magasin, type,
-quartier, téléphone, date de visite, intérêt (1–5), objection principale,
+Suivi (un Google Sheets) : commerce, secteur, quartier, téléphone, date,
+équipement actuel, intérêt (1–5), offre gratuite donnée, objection,
 prochaine action, date de relance.
 
 ---
 
-## 2. Script d'appel fournisseurs
+## 3. Script d'appel fournisseurs et éditeurs
 
-### Le matériel à chiffrer
+### A. Fournisseurs de matériel
 
-| Article | À préciser au fournisseur |
+> « Salam, ana kanrkkeb les caisses w l-matériel l l-ma7alat f Tanja.
+> Kanqelleb 3la fournisseur dayem : caisses tactiles, imprimantes ticket,
+> tiroirs, scanners, balances, w les rouleaux. »
+
+| Article | À préciser |
 | --- | --- |
-| Imprimante ticket thermique | 58 mm ou 80 mm ; Bluetooth, USB ou Wi-Fi ; marche avec Android |
-| Tiroir-caisse | Branchement RJ11 sur l'imprimante (ouverture automatique) |
-| Lecteur code-barres / QR | Sans fil ou USB ; **lit les QR codes** (indispensable pour Daftar) |
-| Tablette ou caisse tactile Android | Taille d'écran, RAM, version Android, Chrome à jour |
-| Consommables | Rouleaux papier 58/80 mm, étiquettes adhésives |
+| Caisse tactile tout-en-un | Android ou Windows, taille d'écran, double écran client |
+| Imprimante ticket | 58 ou 80 mm ; USB, Bluetooth, Wi-Fi, réseau (cuisine) |
+| Tiroir-caisse | RJ11 sur l'imprimante |
+| Lecteur | Code-barres **et** QR ; filaire ou sans fil |
+| Balance étiquetteuse | Compatible code-barres poids |
+| Pointeuse, caméras | Prix, application mobile, installation |
+| Rouleaux, étiquettes | Prix par carton, délai |
 
-### L'appel (français / darija)
-
-> « Bonjour, je monte une activité d'installation de caisses pour les
-> commerces de Tanger. Je cherche un fournisseur régulier pour des
-> imprimantes ticket, tiroirs-caisse et lecteurs code-barres. »
->
-> « Salam, ana kanrkkeb les caisses l l-ma7alat f Tanja. Kanqelleb 3la
-> fournisseur dayem dyal les imprimantes ticket, les tiroirs w les scanners. »
-
-### Les questions, dans l'ordre
-
-1. Prix à l'unité ? Prix pour 5 ? Pour 10 ?
-2. Facture avec ICE ? Prix HT ou TTC ?
+Questions, dans l'ordre :
+1. Prix à l'unité, pour 5, pour 10 ? HT ou TTC ?
+2. Facture avec ICE ?
 3. Garantie combien de mois ? Échange ou réparation ? Qui paie le transport ?
-4. Délai de livraison à Tanger ? Livraison payante ?
-5. L'imprimante marche-t-elle avec un téléphone Android **sans logiciel
-   spécial** ? Avec l'application RawBT ? Peut-on la tester avant d'acheter ?
-6. Le scanner lit-il les QR codes, pas seulement les codes-barres ?
-7. Stock disponible en ce moment ? Rupture fréquente ?
-8. Paiement : comptant, virement, crédit possible après plusieurs commandes ?
-9. Remise revendeur si je deviens client régulier ?
+4. Délai et frais de livraison à Tanger ?
+5. Compatible avec quels logiciels de caisse ? Peut-on tester avant d'acheter ?
+6. Stock disponible ? Ruptures fréquentes ?
+7. Paiement : comptant, virement, crédit après plusieurs commandes ?
+8. Remise revendeur, ou dépôt-vente pour un kit de démonstration ?
+
+### B. Éditeurs de logiciel de caisse
+
+> « Bonjour, je lance une activité d'installation de caisses à Tanger. Je
+> cherche un logiciel à proposer à mes clients et je voudrais connaître votre
+> programme revendeur. »
+
+1. Avez-vous un programme revendeur ou partenaire ? Quelle commission ou remise ?
+2. Prix public par mois / par an / à vie ? Quels secteurs (restaurant, épicerie, boutique) ?
+3. Factures conformes (ICE, TVA, numérotation continue) ?
+4. Interface en arabe ? Marche sans internet ?
+5. Quel matériel est compatible ?
+6. Qui fait l'assistance : vous ou moi ? En darija ?
+7. Compte de démonstration gratuit pour mes visites ?
+8. Exclusivité possible sur Tanger ?
 
 ### Grille de comparaison
 
-| Fournisseur | Ville | Article | Prix ×1 | Prix ×10 | Facture ICE | Garantie | Délai | Android OK | Note /5 |
+| Fournisseur / éditeur | Ville | Article | Prix ×1 | Prix ×10 | Facture ICE | Garantie | Délai | Remise revendeur | Note /5 |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
 | | | | | | | | | | |
 
-Où chercher : importateurs et grossistes de Casablanca (Derb Ghallef et
-alentours), boutiques informatique de Tanger, vendeurs Avito « caisse
-enregistreuse », distributeurs de marques d'imprimantes thermiques. Toujours
-avoir au moins un fournisseur à Tanger pour les remplacements rapides.
-
-**Repère de prix relevé (à vérifier)** : chez les concurrents marocains, le
-matériel d'un poste complet se vend de 4 500 à 12 800 DH, un pack écran tactile
-+ tiroir à partir de 5 900 DH.
+**Repères relevés (à vérifier)** : poste complet chez les concurrents 4 500 à
+12 800 DH ; pack écran + tiroir dès 5 900 DH ; logiciels 150 à 400 DH/mois,
+licences à vie 1 290 à 2 500 DH.
 
 ---
 
-## 3. Fiche tournée terrain
+## 4. Fiche tournée terrain
 
-### Où aller (à adapter)
+### Où aller
 
-- **Casabarata** : forte densité de boutiques, électronique, téléphonie.
-- **Centre-ville** (boulevard Mohammed V, Pasteur) : boutiques de vêtements,
-  chaussures, optique.
-- **Beni Makada, Mesnana, Iberia** : épiceries, quincailleries, électroménager.
-- **Magasins de trottinettes et deux-roues** : le terrain où Daftar est le plus
-  fort (numéro de série, crédit, garantie).
+| Zone | Secteurs à viser |
+| --- | --- |
+| Casabarata | Téléphonie, électronique, vêtements |
+| Centre-ville (Bd Mohammed V, Pasteur) | Cafés, restaurants, optique, chaussures |
+| Beni Makada, Mesnana, Iberia | Épiceries, boucheries, quincailleries, snacks |
+| Zones neuves et centres commerciaux | Nouvelles ouvertures : ils doivent s'équiper de tout |
 
-Meilleurs horaires : milieu de matinée (10 h–12 h) et après 16 h ; éviter
-l'heure de prière du vendredi et le samedi après-midi chargé.
+**Les nouvelles ouvertures sont la meilleure cible** : rideau baissé avec
+« bientôt », travaux en cours. Ils achètent tout l'équipement d'un coup.
 
-### Les 30 premières secondes
+Horaires : 10 h–12 h et après 16 h. Restaurants : entre 15 h et 18 h.
 
-> « Salam, ana [smiytek]. Kankhdem m3a l-ma7alat f Tanja f les caisses w
-> tsyir dyal stock w lkridi. Ma jitch nbi3 lik daba, bghit ghir nswlek juj
-> dqayeq kifach katsyir l-ma7al dyalek. »
+### Les 30 premières secondes (accroche gratuite)
 
-### Les questions (à remplir après chaque visite)
+> « Salam, ana [smiytek]. Kanjehhzo l-ma7alat f Tanja : caisse, matériel,
+> caméras, Google Maps. Ma jitch nbi3 lik, kan3tik diagnostic fabor : nchouf
+> m3ak achno khassek w achno ma khassekch. W n9ad lik fiche Google Maps
+> fabor bach ylqawk l-klients. »
+
+### Les questions
 
 | # | Question (darija) | Réponse |
 | --- | --- | --- |
-| 1 | Kifach katkteb l-mabi3at dyalek ? (carnet, Excel, caisse, rien) | |
-| 2 | 3ndek kridi m3a l-klients ? Kifach katt3qeb ? | |
-| 3 | Kat3ref ch7al 3ndek f stock bla ma t7seb ? | |
-| 4 | Kat3ti facture l-klients ? Ch7al mn mra f simana ? | |
-| 5 | 3ndek vendeur ? Katti9 fih f la caisse ? | |
-| 6 | Achno akbar mochkil f tsyir dyal l-ma7al ? | |
-| 7 | Ila kan chi 7aja t7el had l-mochkil, ch7al tkhelles f ch-chher ? | |
+| 1 | Achno 3ndek daba : caisse, carnet, walo ? Mnin chritiha w b ch7al ? | |
+| 2 | Wach l-matériel dyalek khddam mzyan ? Chkoun kayslleh lik ? | |
+| 3 | Mnin katchri les rouleaux ? B ch7al ? | |
+| 4 | 3ndek kridi m3a l-klients ? Kifach katt3qeb ? | |
+| 5 | Ch7al mn khddam 3ndek ? Kifach katt3qeb l-wqt w l-caisse ? | |
+| 6 | 3ndek caméras ? TPE dyal la carte ? | |
+| 7 | Wach l-ma7al dyalek kayban f Google Maps ? | |
+| 8 | Achno akbar mochkil 3ndek f l-ma7al ? | |
+| 9 | Ila 7lina had l-mochkil, ch7al tkhelles ? | |
 
-À noter aussi : type de commerce, quartier, téléphone du patron, a-t-il déjà
-une caisse (laquelle, combien payée), intérêt de 1 à 5, objection principale,
-prochaine action et date.
+À noter : secteur, quartier, taille (employés, postes), équipement actuel,
+offre gratuite proposée, intérêt (1–5), objection, prochaine action.
 
-### Trois règles
+### Règles
 
-1. Laisser le patron toucher l'écran (voir `docs/parcours-demo.md`).
+1. Toujours laisser quelque chose de gratuit (diagnostic, fiche Google Maps,
+   conseil) : c'est ce qui fait revenir.
 2. Se taire après chaque question.
-3. Ne rien promettre qui n'existe pas encore (impression testée, restaurant…).
+3. Ne vendre qu'à la deuxième visite, sauf si le patron demande un prix.
 
 ---
 
-## 4. Posts réseaux sociaux
+## 5. Posts réseaux sociaux
 
-Nom de la page : à choisir (court, facile à dire en darija, disponible sur
-Instagram, Facebook, TikTok et en `.ma`). Photo de profil : logo simple.
-Bio : « Caisse + stock + kridi f téléphone dyalek · Installation f Tanja ·
-Essai gratuit · WhatsApp : [numéro] ».
+Marque : à choisir, **sans le nom d'un logiciel** (vous pourrez changer de
+fournisseur). Court, facile à dire en darija, disponible sur Instagram,
+Facebook, TikTok et en `.ma`.
+Bio : « Caisse · Matériel · Caméras · Google Maps · Installation f Tanja ·
+Diagnostic fabor · WhatsApp : [numéro] ».
 
-### Calendrier : 3 posts par semaine (lundi, mercredi, samedi)
+### 3 posts par semaine (lundi, mercredi, samedi)
 
-**Post 1 — Présentation**
-> FR : Vous gérez encore votre magasin sur un carnet ? Ventes, stock, crédits
-> clients, factures : tout dans votre téléphone. Installation à Tanger, essai
-> gratuit.
-> Darija : Mazal katkteb f lcarnet ? L-mabi3at, stock, lkridi w l-factures,
-> kolchi f téléphone dyalek. Kanrkkbo f Tanja, w tjerreb fabor.
+1. **Présentation** — « Kolchi li khass l-ma7al dyalek, 3nd wa7ed. Caisse,
+   matériel, caméras, Google Maps. Kanjiw 3ndek f Tanja. »
+2. **Google Maps gratuit** — « L-ma7al dyalek ma kaybanch f Google Maps ?
+   Kan9adoha lik fabor. Seft lina f WhatsApp. »
+3. **Vidéo 30 s** — une vente filmée : scan, encaissement, ticket qui sort,
+   tiroir qui s'ouvre. Texte : « Bi3a f 10 thawani ».
+4. **Restaurant** — commande prise, ticket qui sort en cuisine.
+   « Ma b9a la ghalat la tsna. »
+5. **Rouleaux livrés** — « Les rouleaux kaywslok l l-ma7al, ma tb9ach tkhrej
+   tqelleb. »
+6. **Avant / après** — un comptoir encombré avec un carnet, puis le même
+   comptoir équipé.
+7. **Témoignage** — photo du premier client équipé (avec son accord écrit),
+   une phrase de lui, son quartier.
+8. **Ouvertures** — « Ghadi t7el ma7al jdid ? Njehhzo lik kolchi mn nhar
+   lowl. »
 
-**Post 2 — Le crédit client (kridi)**
-> Darija : Ch7al d lflous 3ndek f berra 3nd l-klients ? Daba t3refha f thania,
-> w tseft rappel f WhatsApp b klma wa7da.
-> Visuel : capture de l'écran « argent en retard ».
-
-**Post 3 — Vidéo 30 secondes**
-> Une vente filmée de bout en bout : scanner, panier, encaisser, ticket qui
-> sort. Texte à l'écran : « Bi3a f 10 thawani ».
-
-**Post 4 — Avant / après**
-> Photo d'un carnet de crédit raturé à gauche, téléphone avec Daftar à droite.
-> « Men lcarnet l téléphone. »
-
-**Post 5 — Le vendeur**
-> Darija : L-vendeur dyalek ybi3, walakin ma ychoufch l-marge dyalek w ma
-> ymse7 walo.
-
-**Post 6 — Témoignage**
-> Photo du premier commerçant équipé (avec son accord écrit), une phrase de
-> lui, son quartier.
-
-**Post 7 — Offre de lancement**
-> « Les 10 premiers magasins de Tanger : installation offerte. » (à décider
-> seulement après avoir vu les prix fournisseurs et les réactions terrain.)
-
-### Conseils
-
-- Toujours finir par un appel à l'action : « Seft lina f WhatsApp ».
-- Répondre aux messages dans l'heure.
-- Mesurer chaque semaine : nombre de messages WhatsApp reçus, visites
-  obtenues, essais lancés. Abandonner ce qui ne ramène personne.
+Chaque post finit par « Seft lina f WhatsApp ». Répondre dans l'heure.
+Mesurer chaque semaine : messages reçus, visites obtenues, ventes. Arrêter ce
+qui ne ramène personne.
 
 ---
 
-## 5. Offre à tester (hypothèses)
+## 6. Offre à tester (hypothèses)
 
-| Élément | Hypothèse de départ | Repère marché |
+| Élément | Hypothèse | Repère marché |
 | --- | --- | --- |
-| Logiciel | 150–200 DH/mois, ou formule annuelle | 150–400 DH/mois chez les concurrents ; licences à vie 1 290–2 500 DH |
-| Pack matériel | Prix fournisseur + marge, sur devis | 4 500–12 800 DH le poste |
-| Installation + formation | Offerte au lancement, payante ensuite | Souvent incluse chez les installateurs |
-| Essai | 14 jours gratuits, installé en magasin | Réflexe du marché (Ejahiz, QuickCom) |
+| Diagnostic + fiche Google Maps | Gratuit | Accroche |
+| Essai caisse | 14 jours gratuits | Pratique courante |
+| Pack caisse boutique | Prix fournisseur + marge, sur devis | 4 500–12 800 DH |
+| Pack restaurant | Pack boutique + imprimante cuisine | À chiffrer |
+| Logiciel | Prix de l'éditeur partenaire, ou gratuit (option B) | 150–400 DH/mois |
+| Installation + formation | Offerte pour les 10 premiers clients | Souvent incluse |
+| Maintenance annuelle | Forfait à définir (dépannage sous 24 h à Tanger) | À vérifier chez les concurrents |
+| Rouleaux livrés | Abonnement mensuel | Récurrent |
 
-Préparer une réponse à « Posio coûte 1 290 DH une seule fois » : par exemple,
-l'abonnement inclut les mises à jour, la sauvegarde en ligne, l'assistance à
-Tanger et la synchronisation entre téléphones.
+L'argument face aux concurrents nationaux : **sur place à Tanger, dépannage
+le jour même, un seul numéro pour tout.**
